@@ -4,6 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SHELLS | 3D Shell & Horn Morphospace</title>
+    <!-- ブラウザタブ用サムネイル（貝殻アイコン） -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%23f3f1ed'/%3E%3Cg transform='translate(64,66)' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M0 0 C5 -2 8 3 4 9 C-2 16 -14 14 -18 4 C-23 -10 -12 -26 4 -29 C25 -33 43 -15 44 8 C45 36 20 54 -10 50 C-42 45 -56 12 -46 -22' stroke='%231c1b18' stroke-width='6.5'/%3E%3Cpath d='M-46 -22 C-34 -48 -2 -56 26 -42 C48 -31 56 -6 44 8' stroke='%23b85d3b' stroke-width='6.5'/%3E%3Cpath d='M4 -29 L14 -46 M26 -24 L40 -34 M42 -4 L54 -6 M36 22 L46 30 M14 44 L18 54 M-18 46 L-24 54' stroke='%23b85d3b' stroke-width='4' opacity='0.85'/%3E%3C/g%3E%3C/svg%3E">
+    <!-- OGP / SNS共有用メタタグ -->
+    <meta property="og:title" content="SHELLS | 3D Shell & Horn Morphospace">
+    <meta property="og:description" content="『SHELLS』自分好みの貝殻を作ってコレクションしよう！自然界に存在しない貝も作れちゃう⁉">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://da-hu-da.github.io/shells/">
+    <meta property="og:site_name" content="SHELLS">
+    <meta property="og:image" content="https://da-hu-da.github.io/shells/ogp.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SHELLS | 3D Shell & Horn Morphospace">
+    <meta name="twitter:description" content="『SHELLS』自分好みの貝殻を作ってコレクションしよう！自然界に存在しない貝も作れちゃう⁉">
+    <meta name="twitter:image" content="https://da-hu-da.github.io/shells/ogp.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -214,7 +229,7 @@
         <div id="title-content-box" class="w-full sm:w-auto max-w-xl space-y-3 sm:space-y-5 mb-1 sm:mb-2 md:mb-0">
             <div class="flex sm:inline-flex flex-col items-stretch">
                 <div>
-                    <h1 class="text-5xl sm:text-7xl md:text-8xl font-bold tracking-tight text-stone-900 leading-none">
+                    <h1 id="main-title-logo" class="pointer-events-auto text-5xl sm:text-7xl md:text-8xl font-bold tracking-tight text-stone-900 leading-none">
                         SHELLS
                     </h1>
                 </div>
