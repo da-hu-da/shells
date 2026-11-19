@@ -1681,10 +1681,10 @@
                 const imageFile = new File([blob], `${safeFileName}_SHELLS.png`, { type: 'image/png' });
 
                 if (navigator.share) {
+                    // urlプロパティを別で渡すと一部OS/アプリでtextやfilesが破棄されURLのみになるため、textに紹介文とURLをまとめる
                     const shareData = {
                         title: `${item.name} | SHELLS`,
-                        text: itemShareFull,
-                        url: SHARE_URL
+                        text: itemShareFull
                     };
                     if (navigator.canShare && navigator.canShare({ files: [imageFile] })) {
                         shareData.files = [imageFile];
@@ -1700,8 +1700,8 @@
             // Web Share API 非対応環境（PC等）ではシェアモーダルに標本情報をセットして開く
             activeShareText = itemShareFull;
             document.getElementById('share-preview-text').textContent = itemShareFull;
-            document.getElementById('share-x-link').href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(itemShareIntro)}&url=${encodeURIComponent(SHARE_URL)}`;
-            document.getElementById('share-line-link').href = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(SHARE_URL)}&text=${encodeURIComponent(itemShareIntro)}`;
+            document.getElementById('share-x-link').href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(itemShareFull)}`;
+            document.getElementById('share-line-link').href = `https://line.me/R/share?text=${encodeURIComponent(itemShareFull)}`;
             shareModal.classList.remove('hidden');
             shareModal.classList.add('flex');
         }
@@ -1863,8 +1863,8 @@
 
         const shareModal = document.getElementById('share-modal');
         document.getElementById('share-preview-text').textContent = SHARE_FULL_TEXT;
-        document.getElementById('share-x-link').href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(SHARE_INTRO)}&url=${encodeURIComponent(SHARE_URL)}`;
-        document.getElementById('share-line-link').href = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(SHARE_URL)}&text=${encodeURIComponent(SHARE_INTRO)}`;
+        document.getElementById('share-x-link').href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(SHARE_FULL_TEXT)}`;
+        document.getElementById('share-line-link').href = `https://line.me/R/share?text=${encodeURIComponent(SHARE_FULL_TEXT)}`;
 
         function copyShareTextFallback(labelEl, defaultText) {
             const tempInput = document.createElement('textarea');
@@ -1891,15 +1891,15 @@
         document.getElementById('title-share-btn').addEventListener('click', async () => {
             activeShareText = SHARE_FULL_TEXT;
             document.getElementById('share-preview-text').textContent = SHARE_FULL_TEXT;
-            document.getElementById('share-x-link').href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(SHARE_INTRO)}&url=${encodeURIComponent(SHARE_URL)}`;
-            document.getElementById('share-line-link').href = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(SHARE_URL)}&text=${encodeURIComponent(SHARE_INTRO)}`;
+            document.getElementById('share-x-link').href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(SHARE_FULL_TEXT)}`;
+            document.getElementById('share-line-link').href = `https://line.me/R/share?text=${encodeURIComponent(SHARE_FULL_TEXT)}`;
 
             if (navigator.share) {
                 try {
+                    // urlを個別指定すると一部ブラウザ・SNSでtextが無視されURLのみになるため、textに紹介文とリンクを統合して渡す
                     await navigator.share({
                         title: 'SHELLS | 3D Shell & Horn Morphospace',
-                        text: SHARE_FULL_TEXT,
-                        url: SHARE_URL
+                        text: SHARE_FULL_TEXT
                     });
                     return;
                 } catch (err) {
