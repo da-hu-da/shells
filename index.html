@@ -71,6 +71,19 @@
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
             cursor: grab;
         }
+        @media (max-width: 639px) {
+            input[type="range"] {
+                height: 8px;
+            }
+            input[type="range"]::-webkit-slider-thumb {
+                width: 24px;
+                height: 24px;
+            }
+            input[type="range"]::-moz-range-thumb {
+                width: 24px;
+                height: 24px;
+            }
+        }
 
         /* ガラスモーフィズムパネル基本スタイル */
         .glass-panel {
@@ -196,61 +209,61 @@
     <!-- ==========================================
          1. タイトル画面 (TITLE SCREEN)
     =========================================== -->
-    <div id="title-screen" class="screen-transition visible-screen fixed inset-0 z-20 flex-col justify-end md:justify-center p-6 sm:p-10 md:p-14 pointer-events-none">
+    <div id="title-screen" class="screen-transition visible-screen fixed inset-0 z-20 flex-col justify-end md:justify-center p-4 sm:p-10 md:p-14 pointer-events-none">
         <!-- タイトルとアクションボタン（縦長画面では下部・横長画面では左側に配置） -->
-        <div id="title-content-box" class="max-w-xl space-y-5 mb-2 md:mb-0">
-            <div class="inline-flex flex-col items-stretch">
+        <div id="title-content-box" class="w-full sm:w-auto max-w-xl space-y-3 sm:space-y-5 mb-1 sm:mb-2 md:mb-0">
+            <div class="flex sm:inline-flex flex-col items-stretch">
                 <div>
-                    <h1 class="text-6xl sm:text-7xl md:text-8xl font-bold tracking-tight text-stone-900 leading-none">
+                    <h1 class="text-5xl sm:text-7xl md:text-8xl font-bold tracking-tight text-stone-900 leading-none">
                         SHELLS
                     </h1>
                 </div>
-                <div class="pt-4 pointer-events-auto flex flex-col items-stretch gap-2.5">
-                    <button id="start-btn" class="group relative w-full inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-stone-900 text-[#faf9f6] font-semibold text-sm sm:text-base tracking-wider shadow-xl shadow-stone-900/20 hover:bg-[#b85d3b] transition-all duration-300 active:scale-95 cursor-pointer">
+                <div class="pt-3 sm:pt-4 pointer-events-auto flex flex-col items-stretch gap-2 sm:gap-2.5">
+                    <button id="start-btn" class="group relative w-full inline-flex items-center justify-center gap-3 px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-stone-900 text-[#faf9f6] font-semibold text-sm sm:text-base tracking-wider shadow-xl shadow-stone-900/20 hover:bg-[#b85d3b] transition-all duration-300 active:scale-95 cursor-pointer">
                         <span>START SIMULATION</span>
                         <svg class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
                         </svg>
                     </button>
 
-                    <div class="flex flex-wrap items-center gap-2">
+                    <div class="grid grid-cols-3 sm:flex sm:flex-wrap items-center gap-1.5 sm:gap-2">
                         <!-- メカニズム解説タブボタン -->
-                        <button id="mechanism-tab-btn" class="glass-panel inline-flex items-center gap-1.5 px-4 py-3 rounded-2xl text-stone-800 font-semibold text-xs sm:text-sm tracking-wide hover:bg-white transition-all duration-200 active:scale-95 cursor-pointer">
-                            <svg class="w-4 h-4 text-[#b85d3b]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button id="mechanism-tab-btn" class="glass-panel inline-flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-4 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-stone-800 font-semibold text-[11px] sm:text-sm tracking-wide hover:bg-white transition-all duration-200 active:scale-95 cursor-pointer whitespace-nowrap">
+                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#b85d3b] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                             <span>メカニズム</span>
                         </button>
 
                         <!-- タイトル画面用ナイトモード切り替えボタン -->
-                        <button id="title-night-btn" class="glass-panel inline-flex items-center gap-1.5 px-4 py-3 rounded-2xl text-stone-800 font-semibold text-xs sm:text-sm tracking-wide hover:bg-white transition-all duration-200 active:scale-95 cursor-pointer" title="ナイトモード切り替え">
-                            <span class="night-icon inline-flex items-center">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button id="title-night-btn" class="glass-panel inline-flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-4 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-stone-800 font-semibold text-[11px] sm:text-sm tracking-wide hover:bg-white transition-all duration-200 active:scale-95 cursor-pointer whitespace-nowrap" title="ナイトモード切り替え">
+                            <span class="night-icon inline-flex items-center shrink-0">
+                                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
                                 </svg>
                             </span>
-                            <span class="night-label text-xs">ナイトモード</span>
+                            <span class="night-label text-[11px] sm:text-xs">ナイトモード</span>
                         </button>
 
                         <!-- シェアボタン -->
-                        <button id="title-share-btn" class="glass-panel inline-flex items-center gap-1.5 px-4 py-3 rounded-2xl text-stone-800 font-semibold text-xs sm:text-sm tracking-wide hover:bg-white transition-all duration-200 active:scale-95 cursor-pointer" title="ゲームをシェア">
-                            <svg class="w-4 h-4 text-[#b85d3b]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button id="title-share-btn" class="glass-panel inline-flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-4 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-stone-800 font-semibold text-[11px] sm:text-sm tracking-wide hover:bg-white transition-all duration-200 active:scale-95 cursor-pointer whitespace-nowrap" title="ゲームをシェア">
+                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#b85d3b] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
                             </svg>
-                            <span id="title-share-label" class="text-xs">シェア</span>
+                            <span id="title-share-label" class="text-[11px] sm:text-xs">シェア</span>
                         </button>
                     </div>
                 </div>
             </div>
 
             <!-- 操作ガイド（スタートボタン・サブボタン群の下） -->
-            <p class="text-xs text-stone-500 pt-0.5">
+            <p class="text-[11px] sm:text-xs text-stone-500 pt-0.5">
                 <span class="hidden md:inline">ドラッグで視点回転・ピンチで拡大縮小</span>
                 <span class="inline md:hidden">スワイプで視点回転・ピンチで拡大縮小</span>
             </p>
 
             <!-- 「メカニズム」タブ展開コンテンツ -->
-            <div id="mechanism-panel" class="hidden pointer-events-auto glass-panel rounded-2xl p-5 space-y-3.5 max-w-lg transition-all duration-300">
+            <div id="mechanism-panel" class="hidden pointer-events-auto glass-panel rounded-2xl p-4 sm:p-5 space-y-3 sm:space-y-3.5 max-w-lg max-h-[42vh] sm:max-h-none overflow-y-auto transition-all duration-300">
                 <div class="flex items-center justify-between border-b border-stone-900/10 pb-2">
                     <span class="font-mono-tech text-xs font-bold tracking-wider text-[#b85d3b]">DAVID RAUP'S MODEL (1966)</span>
                     <button id="close-mechanism-btn" class="text-stone-400 hover:text-stone-800 p-1 rounded-lg transition-colors cursor-pointer" title="閉じる">
@@ -283,28 +296,28 @@
     <!-- ==========================================
          2. シミュレーション画面 (SIMULATION SCREEN)
     =========================================== -->
-    <div id="sim-screen" class="screen-transition hidden-screen fixed inset-0 z-10 flex-col justify-between p-4 sm:p-6 pointer-events-none">
+    <div id="sim-screen" class="screen-transition hidden-screen fixed inset-0 z-10 flex-col justify-between p-2.5 sm:p-6 pointer-events-none">
         
         <!-- 上部バー：タイトルへ戻る ＋ プリセット ＋ コレクション開閉 ＋ 現在の形態分類 -->
-        <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-3 w-full">
+        <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-2 sm:gap-3 w-full">
             <!-- 左上：戻るボタン・プリセット・コレクションボタン -->
-            <div class="flex flex-wrap items-center gap-2 pointer-events-auto">
-                <button id="back-btn" class="glass-panel inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium text-stone-700 hover:text-stone-900 hover:bg-white transition-all active:scale-95 cursor-pointer" title="タイトル画面へ戻る">
+            <div class="flex flex-wrap items-center justify-between sm:justify-start gap-1.5 sm:gap-2 pointer-events-auto w-full sm:w-auto">
+                <button id="back-btn" class="order-1 glass-panel inline-flex items-center gap-1 sm:gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl text-xs font-medium text-stone-700 hover:text-stone-900 hover:bg-white transition-all active:scale-95 cursor-pointer" title="タイトル画面へ戻る">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
                     <span>TITLE</span>
                 </button>
 
-                <!-- プリセット標本セレクター -->
-                <div class="glass-panel flex items-center gap-1 p-1 rounded-xl overflow-x-auto no-scrollbar max-w-[calc(100vw-11rem)] sm:max-w-none">
-                    <button data-preset="nautilus" class="preset-btn px-2.5 py-1.5 rounded-lg text-xs font-medium text-stone-700 hover:bg-stone-900/10 transition-colors whitespace-nowrap cursor-pointer">オウムガイ</button>
-                    <button data-preset="snail" class="preset-btn px-2.5 py-1.5 rounded-lg text-xs font-medium text-stone-700 hover:bg-stone-900/10 transition-colors whitespace-nowrap cursor-pointer">巻貝</button>
-                    <button data-preset="clam" class="preset-btn px-2.5 py-1.5 rounded-lg text-xs font-medium text-stone-700 hover:bg-stone-900/10 transition-colors whitespace-nowrap cursor-pointer">二枚貝</button>
-                    <button data-preset="ram" class="preset-btn px-2.5 py-1.5 rounded-lg text-xs font-medium text-stone-700 hover:bg-stone-900/10 transition-colors whitespace-nowrap cursor-pointer">羊の角</button>
-                    <button data-preset="tusk" class="preset-btn px-2.5 py-1.5 rounded-lg text-xs font-medium text-stone-700 hover:bg-stone-900/10 transition-colors whitespace-nowrap cursor-pointer">象の牙</button>
-                    <div class="w-px h-4 bg-stone-300 mx-0.5"></div>
-                    <button id="random-btn" class="px-2.5 py-1.5 rounded-lg text-xs font-medium text-[#b85d3b] hover:bg-[#b85d3b]/10 transition-colors whitespace-nowrap cursor-pointer flex items-center gap-1">
+                <!-- プリセット標本セレクター（スマホ幅では横幅いっぱいの1行スクロールバーに配置） -->
+                <div class="order-3 sm:order-2 w-full sm:w-auto glass-panel flex items-center justify-between sm:justify-start gap-1 p-1 rounded-xl overflow-x-auto no-scrollbar">
+                    <button data-preset="nautilus" class="preset-btn px-2.5 py-1.5 rounded-lg text-[11px] sm:text-xs font-medium text-stone-700 hover:bg-stone-900/10 transition-colors whitespace-nowrap cursor-pointer">オウムガイ</button>
+                    <button data-preset="snail" class="preset-btn px-2.5 py-1.5 rounded-lg text-[11px] sm:text-xs font-medium text-stone-700 hover:bg-stone-900/10 transition-colors whitespace-nowrap cursor-pointer">巻貝</button>
+                    <button data-preset="clam" class="preset-btn px-2.5 py-1.5 rounded-lg text-[11px] sm:text-xs font-medium text-stone-700 hover:bg-stone-900/10 transition-colors whitespace-nowrap cursor-pointer">二枚貝</button>
+                    <button data-preset="ram" class="preset-btn px-2.5 py-1.5 rounded-lg text-[11px] sm:text-xs font-medium text-stone-700 hover:bg-stone-900/10 transition-colors whitespace-nowrap cursor-pointer">羊の角</button>
+                    <button data-preset="tusk" class="preset-btn px-2.5 py-1.5 rounded-lg text-[11px] sm:text-xs font-medium text-stone-700 hover:bg-stone-900/10 transition-colors whitespace-nowrap cursor-pointer">象の牙</button>
+                    <div class="w-px h-4 bg-stone-300 mx-0.5 shrink-0"></div>
+                    <button id="random-btn" class="px-2.5 py-1.5 rounded-lg text-[11px] sm:text-xs font-medium text-[#b85d3b] hover:bg-[#b85d3b]/10 transition-colors whitespace-nowrap cursor-pointer flex items-center gap-1 shrink-0">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                         </svg>
@@ -313,26 +326,26 @@
                 </div>
 
                 <!-- コレクションケース開閉ボタン -->
-                <div class="relative">
-                    <button id="open-collection-btn" class="glass-panel inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-stone-800 hover:bg-white transition-all active:scale-95 cursor-pointer">
+                <div class="order-2 sm:order-3 relative">
+                    <button id="open-collection-btn" class="glass-panel inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-2 rounded-xl text-xs font-semibold text-stone-800 hover:bg-white transition-all active:scale-95 cursor-pointer">
                         <svg class="w-3.5 h-3.5 text-[#b85d3b]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                         </svg>
                         <span>COLLECTION</span>
                         <span id="collection-count-badge" class="font-mono-tech text-[10px] px-1.5 py-0.5 rounded-full bg-stone-900 text-[#faf9f6]">0/10</span>
                     </button>
-                    <div id="toast-msg" class="absolute left-0 top-full mt-1.5 glass-panel px-3 py-1.5 rounded-xl text-xs font-medium text-[#b85d3b] whitespace-nowrap opacity-0 pointer-events-none transition-opacity duration-300 shadow-md z-20"></div>
+                    <div id="toast-msg" class="absolute right-0 sm:left-0 sm:right-auto top-full mt-1.5 glass-panel px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-medium text-[#b85d3b] max-w-[calc(100vw-1.5rem)] sm:max-w-none truncate sm:whitespace-nowrap opacity-0 pointer-events-none transition-opacity duration-300 shadow-md z-20"></div>
                 </div>
             </div>
             <!-- 右上：標本分類タブ ＋ 標本保存アクション -->
-            <div class="flex flex-col items-end gap-2 pointer-events-auto sm:min-w-[280px] max-w-sm">
-                <div id="specimen-card" class="glass-panel px-4 py-3 rounded-2xl w-full transition-all duration-300">
+            <div class="flex flex-col items-end gap-1.5 sm:gap-2 pointer-events-auto w-full sm:w-auto sm:min-w-[280px] sm:max-w-sm">
+                <div id="specimen-card" class="glass-panel px-3 py-2 sm:px-4 sm:py-3 rounded-2xl w-full transition-all duration-300">
                     <div class="flex items-start justify-between gap-2">
-                        <div>
-                            <h2 id="specimen-name-ja" class="text-base sm:text-lg font-bold text-stone-900 leading-tight">
+                        <div class="min-w-0">
+                            <h2 id="specimen-name-ja" class="text-sm sm:text-lg font-bold text-stone-900 leading-tight truncate">
                                 オウムガイ
                             </h2>
-                            <p id="specimen-name-en" class="font-mono-tech text-[11px] text-stone-500 mt-0.5">
+                            <p id="specimen-name-en" class="font-mono-tech text-[10px] sm:text-[11px] text-stone-500 mt-0.5 truncate">
                                 Nautilus pompilius
                             </p>
                         </div>
@@ -344,16 +357,16 @@
                         </button>
                     </div>
                     <!-- 開閉式解説タブパネル -->
-                    <div id="specimen-desc-panel" class="hidden mt-2 pt-2 border-t border-stone-900/10">
-                        <p id="specimen-desc" class="text-xs text-stone-600 leading-relaxed">
+                    <div id="specimen-desc-panel" class="hidden mt-1.5 sm:mt-2 pt-1.5 sm:pt-2 border-t border-stone-900/10">
+                        <p id="specimen-desc" class="text-[11px] sm:text-xs text-stone-600 leading-relaxed">
                             平面上で均等に拡大しながら重なり合って巻く黄金比に近い螺旋。
                         </p>
                     </div>
 
                     <!-- 標本名入力 & コレクション保存バー -->
-                    <div class="mt-3 pt-2.5 border-t border-stone-900/10 flex items-center gap-2">
+                    <div class="mt-2 sm:mt-3 pt-2 sm:pt-2.5 border-t border-stone-900/10 flex items-center gap-1.5 sm:gap-2">
                         <input type="text" id="custom-name-input" maxlength="24" placeholder="標本名を入力 (任意)..." class="flex-1 min-w-0 bg-white/70 border border-stone-900/15 rounded-lg px-2.5 py-1.5 text-xs text-stone-900 placeholder-stone-400 focus:outline-none focus:border-[#b85d3b]">
-                        <button id="collect-btn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-900 text-[#faf9f6] font-mono-tech text-xs font-semibold hover:bg-[#b85d3b] transition-colors active:scale-95 cursor-pointer whitespace-nowrap shadow-sm">
+                        <button id="collect-btn" class="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-stone-900 text-[#faf9f6] font-mono-tech text-[11px] sm:text-xs font-semibold hover:bg-[#b85d3b] transition-colors active:scale-95 cursor-pointer whitespace-nowrap shadow-sm">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                             </svg>
@@ -366,30 +379,30 @@
 
         <!-- 下部：タブ切り替え式コントロールパネル（形状 / 質感・色・装飾 / ビュー / ナイトモード） -->
         <div class="w-full max-w-4xl mx-auto pointer-events-auto">
-            <div id="sim-bottom-card" class="glass-panel rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 transition-all duration-200">
+            <div id="sim-bottom-card" class="glass-panel rounded-2xl sm:rounded-3xl p-2.5 sm:p-5 transition-all duration-200">
                 
                 <!-- タブヘッダー -->
-                <div id="sim-tab-header" class="flex flex-wrap items-center justify-between gap-2 border-b border-stone-900/10 pb-2.5 mb-3.5">
-                    <div class="flex items-center gap-1.5 bg-stone-900/5 p-1 rounded-xl">
-                        <button id="tab-btn-shape" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-stone-900 shadow-sm transition-all cursor-pointer">
-                            形状 (W · D · T)
+                <div id="sim-tab-header" class="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 border-b border-stone-900/10 pb-2 sm:pb-2.5 mb-2.5 sm:mb-3.5">
+                    <div class="grid grid-cols-4 sm:flex items-center gap-1 sm:gap-1.5 bg-stone-900/5 p-1 rounded-xl w-full sm:w-auto">
+                        <button id="tab-btn-shape" class="px-1.5 sm:px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-semibold bg-white text-stone-900 shadow-sm transition-all cursor-pointer whitespace-nowrap text-center">
+                            形状 <span class="hidden sm:inline">(W · D · T)</span>
                         </button>
-                        <button id="tab-btn-style" class="px-3 py-1.5 rounded-lg text-xs font-medium text-stone-600 hover:text-stone-900 transition-all cursor-pointer">
+                        <button id="tab-btn-style" class="px-1.5 sm:px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium text-stone-600 hover:text-stone-900 transition-all cursor-pointer whitespace-nowrap text-center">
                             質感・色・装飾
                         </button>
-                        <button id="tab-btn-view" class="px-3 py-1.5 rounded-lg text-xs font-medium text-stone-600 hover:text-stone-900 transition-all cursor-pointer">
+                        <button id="tab-btn-view" class="px-1.5 sm:px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium text-stone-600 hover:text-stone-900 transition-all cursor-pointer whitespace-nowrap text-center">
                             ビュー
                         </button>
-                        <button id="sim-night-btn" class="px-3 py-1.5 rounded-lg text-xs font-medium text-stone-600 hover:text-stone-900 transition-all cursor-pointer inline-flex items-center gap-1.5" title="ナイトモード切り替え">
-                            <span class="night-icon inline-flex items-center">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button id="sim-night-btn" class="px-1.5 sm:px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium text-stone-600 hover:text-stone-900 transition-all cursor-pointer inline-flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap" title="ナイトモード切り替え">
+                            <span class="night-icon inline-flex items-center shrink-0">
+                                <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
                                 </svg>
                             </span>
                             <span class="night-label">ナイトモード</span>
                         </button>
                     </div>
-                    <div class="flex items-center gap-3 ml-auto">
+                    <div class="hidden sm:flex items-center gap-3 ml-auto">
                         <span class="text-[11px] text-stone-500 font-medium">
                             <span class="hidden md:inline">ドラッグで視点回転・ピンチで拡大縮小</span>
                             <span class="inline md:hidden">スワイプで視点回転・ピンチで拡大縮小</span>
@@ -398,11 +411,11 @@
                 </div>
 
                 <!-- コンテンツ枠（質感・色・装飾を開いたときの高さに統一） -->
-                <div id="sim-panel-body" class="grid items-center min-h-[250px] md:min-h-[112px]">
+                <div id="sim-panel-body" class="grid items-center min-h-[215px] sm:min-h-[250px] md:min-h-[112px]">
                     <!-- タブ1: 3つのパラメータスライダー -->
-                    <div id="panel-shape" class="col-start-1 row-start-1 grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-6">
+                    <div id="panel-shape" class="col-start-1 row-start-1 grid grid-cols-1 md:grid-cols-3 gap-2.5 sm:gap-6">
                         <!-- パラメータ 1: W (WIDENS / TURN) -->
-                        <div class="space-y-1.5">
+                        <div class="space-y-1 sm:space-y-1.5">
                             <div class="flex justify-between items-baseline">
                                 <div>
                                     <span class="font-mono-tech font-bold text-sm text-[#b85d3b]">W</span>
@@ -451,34 +464,34 @@
                     </div>
 
                     <!-- タブ2: 質感（テクスチャ）・カラー・立体装飾 -->
-                    <div id="panel-style" class="col-start-1 row-start-1 invisible pointer-events-none grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+                    <div id="panel-style" class="col-start-1 row-start-1 invisible pointer-events-none grid grid-cols-1 md:grid-cols-3 gap-2.5 sm:gap-5">
                     
                         <!-- カラム1: 表面テクスチャ＆光沢仕上げ -->
-                        <div class="space-y-2.5">
+                        <div class="space-y-1.5 sm:space-y-2.5">
                             <div class="flex justify-between items-center">
-                                <span class="text-[11px] font-bold tracking-wider uppercase text-stone-700">表面テクスチャ (Texture)</span>
+                                <span class="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-stone-700">表面テクスチャ (Texture)</span>
                             </div>
                             <div class="grid grid-cols-3 gap-1.5">
                                 <button data-tex="nautilus" class="tex-btn px-2 py-1.5 rounded-lg text-[11px] font-semibold bg-stone-900 text-white transition-all cursor-pointer">貝殻・縞</button>
                                 <button data-tex="clam" class="tex-btn px-2 py-1.5 rounded-lg text-[11px] font-medium bg-stone-900/5 text-stone-700 hover:bg-stone-900/10 transition-all cursor-pointer">二枚貝・肋</button>
                                 <button data-tex="horn" class="tex-btn px-2 py-1.5 rounded-lg text-[11px] font-medium bg-stone-900/5 text-stone-700 hover:bg-stone-900/10 transition-all cursor-pointer">角・象牙</button>
                             </div>
-                            <div class="pt-1">
+                            <div class="pt-0.5 sm:pt-1">
                                 <div class="flex justify-between text-[10px] text-stone-500 mb-1">
                                     <span>表面の光沢 (Roughness / Pearl)</span>
                                 </div>
                                 <div class="grid grid-cols-3 gap-1.5">
-                                    <button data-finish="matte" class="finish-btn py-1 rounded-md text-[10px] font-semibold bg-stone-900 text-white cursor-pointer">石灰マット</button>
-                                    <button data-finish="satin" class="finish-btn py-1 rounded-md text-[10px] font-medium bg-stone-900/5 text-stone-700 hover:bg-stone-900/10 cursor-pointer">自然サテン</button>
-                                    <button data-finish="pearl" class="finish-btn py-1 rounded-md text-[10px] font-medium bg-stone-900/5 text-stone-700 hover:bg-stone-900/10 cursor-pointer">真珠光沢</button>
+                                    <button data-finish="matte" class="finish-btn py-1.5 sm:py-1 rounded-md text-[10px] font-semibold bg-stone-900 text-white cursor-pointer">石灰マット</button>
+                                    <button data-finish="satin" class="finish-btn py-1.5 sm:py-1 rounded-md text-[10px] font-medium bg-stone-900/5 text-stone-700 hover:bg-stone-900/10 cursor-pointer">自然サテン</button>
+                                    <button data-finish="pearl" class="finish-btn py-1.5 sm:py-1 rounded-md text-[10px] font-medium bg-stone-900/5 text-stone-700 hover:bg-stone-900/10 cursor-pointer">真珠光沢</button>
                                 </div>
                             </div>
                         </div>
 
                         <!-- カラム2: カラーカスタマイズ -->
-                        <div class="space-y-2.5">
-                            <span class="block text-[11px] font-bold tracking-wider uppercase text-stone-700">カラーリング (Colors)</span>
-                            <div class="flex items-center justify-between gap-3 bg-stone-900/5 p-2 rounded-xl">
+                        <div class="space-y-1.5 sm:space-y-2.5">
+                            <span class="block text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-stone-700">カラーリング (Colors)</span>
+                            <div class="flex items-center justify-between gap-3 bg-stone-900/5 p-1.5 sm:p-2 rounded-xl">
                                 <label class="flex items-center gap-2 text-xs text-stone-700 cursor-pointer">
                                     <input type="color" id="color-base" value="#efe9dc" class="w-6 h-6">
                                     <span>地色 (Base)</span>
@@ -492,19 +505,19 @@
                             <!-- クイック自然色スウォッチ -->
                             <div class="flex items-center justify-between gap-1.5 pt-0.5">
                                 <span class="text-[10px] text-stone-500">テンプレート:</span>
-                                <div class="flex items-center gap-1.5">
-                                    <button data-base="#efe9dc" data-pat="#b85d3b" class="swatch-btn w-5 h-5 rounded-full border border-stone-400 shadow-sm cursor-pointer" style="background: linear-gradient(135deg, #efe9dc 50%, #b85d3b 50%);" title="オウムガイ・クリーム"></button>
-                                    <button data-base="#f4d5cc" data-pat="#c94a4a" class="swatch-btn w-5 h-5 rounded-full border border-stone-400 shadow-sm cursor-pointer" style="background: linear-gradient(135deg, #f4d5cc 50%, #c94a4a 50%);" title="サンゴピンク"></button>
-                                    <button data-base="#d9e6e2" data-pat="#2e6f65" class="swatch-btn w-5 h-5 rounded-full border border-stone-400 shadow-sm cursor-pointer" style="background: linear-gradient(135deg, #d9e6e2 50%, #2e6f65 50%);" title="翡翠シェル"></button>
-                                    <button data-base="#4a4036" data-pat="#d4af37" class="swatch-btn w-5 h-5 rounded-full border border-stone-400 shadow-sm cursor-pointer" style="background: linear-gradient(135deg, #4a4036 50%, #d4af37 50%);" title="黒蝶・ゴールド"></button>
-                                    <button data-base="#cbbba0" data-pat="#3e3226" class="swatch-btn w-5 h-5 rounded-full border border-stone-400 shadow-sm cursor-pointer" style="background: linear-gradient(135deg, #cbbba0 50%, #3e3226 50%);" title="野生の角"></button>
+                                <div class="flex items-center gap-2 sm:gap-1.5">
+                                    <button data-base="#efe9dc" data-pat="#b85d3b" class="swatch-btn w-6 h-6 sm:w-5 sm:h-5 rounded-full border border-stone-400 shadow-sm cursor-pointer" style="background: linear-gradient(135deg, #efe9dc 50%, #b85d3b 50%);" title="オウムガイ・クリーム"></button>
+                                    <button data-base="#f4d5cc" data-pat="#c94a4a" class="swatch-btn w-6 h-6 sm:w-5 sm:h-5 rounded-full border border-stone-400 shadow-sm cursor-pointer" style="background: linear-gradient(135deg, #f4d5cc 50%, #c94a4a 50%);" title="サンゴピンク"></button>
+                                    <button data-base="#d9e6e2" data-pat="#2e6f65" class="swatch-btn w-6 h-6 sm:w-5 sm:h-5 rounded-full border border-stone-400 shadow-sm cursor-pointer" style="background: linear-gradient(135deg, #d9e6e2 50%, #2e6f65 50%);" title="翡翠シェル"></button>
+                                    <button data-base="#4a4036" data-pat="#d4af37" class="swatch-btn w-6 h-6 sm:w-5 sm:h-5 rounded-full border border-stone-400 shadow-sm cursor-pointer" style="background: linear-gradient(135deg, #4a4036 50%, #d4af37 50%);" title="黒蝶・ゴールド"></button>
+                                    <button data-base="#cbbba0" data-pat="#3e3226" class="swatch-btn w-6 h-6 sm:w-5 sm:h-5 rounded-full border border-stone-400 shadow-sm cursor-pointer" style="background: linear-gradient(135deg, #cbbba0 50%, #3e3226 50%);" title="野生の角"></button>
                                 </div>
                             </div>
                         </div>
 
                         <!-- カラム3: 装飾（トゲ・縦肋・真珠ビーズ） -->
-                        <div class="space-y-2.5">
-                            <span class="block text-[11px] font-bold tracking-wider uppercase text-stone-700">装飾 (Ornaments)</span>
+                        <div class="space-y-1.5 sm:space-y-2.5">
+                            <span class="block text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-stone-700">装飾 (Ornaments)</span>
                             <div class="grid grid-cols-3 gap-1.5">
                                 <button id="dec-spines-btn" class="dec-btn flex flex-col items-center justify-center py-2 px-1 rounded-xl border border-stone-900/10 bg-white/60 text-stone-700 hover:bg-white transition-all cursor-pointer">
                                     <svg class="w-4 h-4 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -526,7 +539,7 @@
                                     <span class="text-[10px] font-semibold">真珠 (Pearls)</span>
                                 </button>
                             </div>
-                            <p class="text-[10px] text-stone-500 leading-tight">
+                            <p class="hidden sm:block text-[10px] text-stone-500 leading-tight">
                                 螺旋の成長曲線に沿って立体的な棘やヒダ・真珠装飾を自動生成します。
                             </p>
                         </div>
@@ -1764,8 +1777,8 @@
         const simPanelBody = document.getElementById('sim-panel-body');
         const simTabHeader = document.getElementById('sim-tab-header');
 
-        const activeTabClass = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-stone-900 shadow-sm transition-all cursor-pointer';
-        const inactiveTabClass = 'px-3 py-1.5 rounded-lg text-xs font-medium text-stone-600 hover:text-stone-900 transition-all cursor-pointer';
+        const activeTabClass = 'px-1.5 sm:px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-semibold bg-white text-stone-900 shadow-sm transition-all cursor-pointer whitespace-nowrap text-center';
+        const inactiveTabClass = 'px-1.5 sm:px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium text-stone-600 hover:text-stone-900 transition-all cursor-pointer whitespace-nowrap text-center';
 
         function setSimTab(mode) {
             tabBtnShape.className = mode === 'shape' ? activeTabClass : inactiveTabClass;
@@ -1774,10 +1787,10 @@
 
             if (mode === 'view') {
                 simPanelBody.classList.add('hidden');
-                simTabHeader.classList.remove('border-b', 'border-stone-900/10', 'pb-2.5', 'mb-3.5');
+                simTabHeader.classList.remove('border-b', 'border-stone-900/10', 'pb-2', 'sm:pb-2.5', 'mb-2.5', 'sm:mb-3.5');
             } else {
                 simPanelBody.classList.remove('hidden');
-                simTabHeader.classList.add('border-b', 'border-stone-900/10', 'pb-2.5', 'mb-3.5');
+                simTabHeader.classList.add('border-b', 'border-stone-900/10', 'pb-2', 'sm:pb-2.5', 'mb-2.5', 'sm:mb-3.5');
 
                 if (mode === 'shape') {
                     panelShape.classList.remove('invisible', 'pointer-events-none');
@@ -2188,8 +2201,11 @@
             }
 
             const isPortrait = window.innerHeight > window.innerWidth;
+            const isSmallScreen = window.innerWidth < 640;
             const targetPosX = (state.mode === 'title' && !isPortrait) ? 1.35 : 0.0;
-            const targetPosY = (state.mode === 'title' && isPortrait) ? 0.72 : 0.15;
+            const targetPosY = (state.mode === 'title' && isPortrait)
+                ? (isSmallScreen ? 0.85 : 0.72)
+                : (isSmallScreen ? 0.1 : 0.15);
 
             shellGroup.position.x += (targetPosX - shellGroup.position.x) * 0.08;
             shellGroup.position.y += (targetPosY - shellGroup.position.y) * 0.08;
@@ -2197,7 +2213,8 @@
             shellGroup.rotation.x += (state.rotX - shellGroup.rotation.x) * 0.15;
             shellGroup.rotation.y += (state.rotY - shellGroup.rotation.y) * 0.15;
 
-            const targetCamZ = 6.2 * state.zoom;
+            const baseCamZ = isSmallScreen ? 7.2 : 6.2;
+            const targetCamZ = baseCamZ * state.zoom;
             camera.position.z += (targetCamZ - camera.position.z) * 0.12;
 
             renderer.render(scene, camera);
