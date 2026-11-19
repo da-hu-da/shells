@@ -1,0 +1,2010 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SHELLS | 3D Shell & Horn Morphospace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background-color: #f3f1ed;
+            color: #1c1b18;
+        }
+        .font-mono-tech {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* 博物館風の洗練されたカスタムレンジスライダー */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            background: rgba(28, 27, 24, 0.12);
+            border-radius: 999px;
+            outline: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        input[type="range"]:hover {
+            background: rgba(28, 27, 24, 0.2);
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #1c1b18;
+            border: 3px solid #faf9f6;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+            cursor: grab;
+            transition: transform 0.15s ease, background-color 0.15s ease;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            background: #b85d3b;
+        }
+        input[type="range"]::-webkit-slider-thumb:active {
+            cursor: grabbing;
+            transform: scale(1.08);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #1c1b18;
+            border: 3px solid #faf9f6;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+            cursor: grab;
+        }
+
+        /* ガラスモーフィズムパネル基本スタイル */
+        .glass-panel {
+            background: rgba(250, 249, 246, 0.82);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(28, 27, 24, 0.12);
+            box-shadow: 0 10px 30px -5px rgba(28, 27, 24, 0.08);
+        }
+
+        /* ナイトモード（ダークネイビーテーマ）用スタイルオーバーライド */
+        body.night-mode {
+            background-color: #0b132b;
+            color: #f1f5f9;
+        }
+        body.night-mode .glass-panel {
+            background: rgba(20, 33, 61, 0.85);
+            border-color: rgba(148, 163, 184, 0.22);
+            box-shadow: 0 10px 30px -5px rgba(4, 9, 20, 0.55);
+        }
+        body.night-mode .text-stone-900 { color: #f8fafc; }
+        body.night-mode .text-stone-800 { color: #e2e8f0; }
+        body.night-mode .text-stone-700 { color: #cbd5e1; }
+        body.night-mode .text-stone-600 { color: #94a3b8; }
+        body.night-mode .text-stone-500 { color: #7dd3fc; }
+        body.night-mode .bg-stone-900\/5 { background-color: rgba(255, 255, 255, 0.08); }
+        body.night-mode .bg-white {
+            background-color: #2563eb;
+            color: #ffffff !important;
+        }
+        body.night-mode .bg-white\/70 {
+            background-color: rgba(15, 23, 42, 0.72);
+            color: #f8fafc;
+        }
+        body.night-mode .bg-white\/60 { background-color: rgba(30, 41, 59, 0.65); }
+        body.night-mode .bg-stone-900 {
+            background-color: #2563eb;
+            color: #ffffff;
+        }
+        body.night-mode .border-stone-900\/10 { border-color: rgba(148, 163, 184, 0.2); }
+        body.night-mode .border-stone-900\/15 { border-color: rgba(148, 163, 184, 0.25); }
+        body.night-mode .text-\[\#b85d3b\] { color: #facc15 !important; }
+        body.night-mode .border-\[\#b85d3b\] { border-color: #facc15 !important; }
+        body.night-mode .bg-\[\#b85d3b\]\/10 { background-color: rgba(250, 204, 21, 0.14) !important; }
+        body.night-mode input[type="range"] { background: rgba(148, 163, 184, 0.28); }
+        body.night-mode input[type="range"]::-webkit-slider-thumb {
+            background: #38bdf8;
+            border-color: #0b132b;
+        }
+        body.night-mode input[type="range"]::-moz-range-thumb {
+            background: #38bdf8;
+            border-color: #0b132b;
+        }
+        body.night-mode #collection-modal > div {
+            background-color: rgba(15, 23, 42, 0.96);
+        }
+        body.night-mode #collection-grid > div {
+            background-color: #1e293b;
+            border-color: rgba(148, 163, 184, 0.2);
+        }
+
+        /* 画面遷移アニメーション */
+        .screen-transition {
+            transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1), transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .hidden-screen {
+            display: none !important;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .visible-screen {
+            display: flex !important;
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* プリセットボタンの横スクロール非表示 */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* カラーピッカーのカスタマイズ */
+        input[type="color"] {
+            -webkit-appearance: none;
+            appearance: none;
+            border: none;
+            padding: 0;
+            background: transparent;
+            cursor: pointer;
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        input[type="color"]::-webkit-color-swatch {
+            border: 2px solid rgba(28, 27, 24, 0.2);
+            border-radius: 999px;
+        }
+
+        /* カスタムスクロールバー（コレクションドロワー用） */
+        .museum-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .museum-scroll::-webkit-scrollbar-track {
+            background: rgba(28, 27, 24, 0.04);
+            border-radius: 999px;
+        }
+        .museum-scroll::-webkit-scrollbar-thumb {
+            background: rgba(28, 27, 24, 0.2);
+            border-radius: 999px;
+        }
+    </style>
+</head>
+<body class="relative w-full h-full">
+
+    <!-- 3D ビューポート（タイトル画面とシミュレーション画面で共有） -->
+    <div id="canvas-container" class="fixed inset-0 w-full h-full z-0 cursor-grab active:cursor-grabbing"></div>
+
+    <!-- ==========================================
+         1. タイトル画面 (TITLE SCREEN)
+    =========================================== -->
+    <div id="title-screen" class="screen-transition visible-screen fixed inset-0 z-20 flex-col justify-end md:justify-center p-6 sm:p-10 md:p-14 pointer-events-none">
+        <!-- タイトルとアクションボタン（縦長画面では下部・横長画面では左側に配置） -->
+        <div id="title-content-box" class="max-w-xl space-y-5 mb-2 md:mb-0">
+            <div class="inline-flex flex-col items-stretch">
+                <div>
+                    <h1 class="text-6xl sm:text-7xl md:text-8xl font-bold tracking-tight text-stone-900 leading-none">
+                        SHELLS
+                    </h1>
+                </div>
+                <div class="pt-4 pointer-events-auto flex flex-col items-stretch gap-2.5">
+                    <button id="start-btn" class="group relative w-full inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-stone-900 text-[#faf9f6] font-semibold text-sm sm:text-base tracking-wider shadow-xl shadow-stone-900/20 hover:bg-[#b85d3b] transition-all duration-300 active:scale-95 cursor-pointer">
+                        <span>START SIMULATION</span>
+                        <svg class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </button>
+
+                    <div class="flex flex-wrap items-center gap-2">
+                        <!-- メカニズム解説タブボタン -->
+                        <button id="mechanism-tab-btn" class="glass-panel inline-flex items-center gap-1.5 px-4 py-3 rounded-2xl text-stone-800 font-semibold text-xs sm:text-sm tracking-wide hover:bg-white transition-all duration-200 active:scale-95 cursor-pointer">
+                            <svg class="w-4 h-4 text-[#b85d3b]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span>メカニズム</span>
+                        </button>
+
+                        <!-- タイトル画面用ナイトモード切り替えボタン -->
+                        <button id="title-night-btn" class="glass-panel inline-flex items-center gap-1.5 px-4 py-3 rounded-2xl text-stone-800 font-semibold text-xs sm:text-sm tracking-wide hover:bg-white transition-all duration-200 active:scale-95 cursor-pointer" title="ナイトモード切り替え">
+                            <span class="night-icon inline-flex items-center">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                                </svg>
+                            </span>
+                            <span class="night-label text-xs">ナイトモード</span>
+                        </button>
+
+                        <!-- シェアボタン -->
+                        <button id="title-share-btn" class="glass-panel inline-flex items-center gap-1.5 px-4 py-3 rounded-2xl text-stone-800 font-semibold text-xs sm:text-sm tracking-wide hover:bg-white transition-all duration-200 active:scale-95 cursor-pointer" title="URLをコピーしてシェア">
+                            <svg class="w-4 h-4 text-[#b85d3b]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+                            </svg>
+                            <span id="title-share-label" class="text-xs">シェア</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 操作ガイド（スタートボタン・サブボタン群の下） -->
+            <p class="text-xs text-stone-500 pt-0.5">
+                <span class="hidden md:inline">ドラッグで視点回転・ピンチで拡大縮小</span>
+                <span class="inline md:hidden">スワイプで視点回転・ピンチで拡大縮小</span>
+            </p>
+
+            <!-- 「メカニズム」タブ展開コンテンツ -->
+            <div id="mechanism-panel" class="hidden pointer-events-auto glass-panel rounded-2xl p-5 space-y-3.5 max-w-lg transition-all duration-300">
+                <div class="flex items-center justify-between border-b border-stone-900/10 pb-2">
+                    <span class="font-mono-tech text-xs font-bold tracking-wider text-[#b85d3b]">DAVID RAUP'S MODEL (1966)</span>
+                    <button id="close-mechanism-btn" class="text-stone-400 hover:text-stone-800 p-1 rounded-lg transition-colors cursor-pointer" title="閉じる">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <p class="text-xs sm:text-sm text-stone-700 leading-relaxed">
+                    「開口部でのみ成長する」というたった1つの法則と、以下の3つのパラメータ（W・D・T）だけで、オウムガイ・巻貝・二枚貝・羊の角・象の牙、さらには自然界に存在しない幻の殻までを自在に創り出すことができます。
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 text-xs">
+                    <div class="bg-stone-900/5 rounded-xl p-2.5">
+                        <div class="font-mono-tech font-bold text-[#b85d3b]">W (Widens)</div>
+                        <div class="text-stone-600 text-[11px] mt-0.5">1回転ごとの管の拡大率</div>
+                    </div>
+                    <div class="bg-stone-900/5 rounded-xl p-2.5">
+                        <div class="font-mono-tech font-bold text-[#b85d3b]">D (Distance)</div>
+                        <div class="text-stone-600 text-[11px] mt-0.5">中心軸からの距離</div>
+                    </div>
+                    <div class="bg-stone-900/5 rounded-xl p-2.5">
+                        <div class="font-mono-tech font-bold text-[#b85d3b]">T (Drop)</div>
+                        <div class="text-stone-600 text-[11px] mt-0.5">垂直方向への降下量</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         2. シミュレーション画面 (SIMULATION SCREEN)
+    =========================================== -->
+    <div id="sim-screen" class="screen-transition hidden-screen fixed inset-0 z-10 flex-col justify-between p-4 sm:p-6 pointer-events-none">
+        
+        <!-- 上部バー：タイトルへ戻る ＋ プリセット ＋ コレクション開閉 ＋ 現在の形態分類 -->
+        <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-3 w-full">
+            <!-- 左上：戻るボタン・プリセット・コレクションボタン -->
+            <div class="flex flex-wrap items-center gap-2 pointer-events-auto">
+                <button id="back-btn" class="glass-panel inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium text-stone-700 hover:text-stone-900 hover:bg-white transition-all active:scale-95 cursor-pointer" title="タイトル画面へ戻る">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    <span>TITLE</span>
+                </button>
+
+                <!-- プリセット標本セレクター -->
+                <div class="glass-panel flex items-center gap-1 p-1 rounded-xl overflow-x-auto no-scrollbar max-w-[calc(100vw-11rem)] sm:max-w-none">
+                    <button data-preset="nautilus" class="preset-btn px-2.5 py-1.5 rounded-lg text-xs font-medium text-stone-700 hover:bg-stone-900/10 transition-colors whitespace-nowrap cursor-pointer">オウムガイ</button>
+                    <button data-preset="snail" class="preset-btn px-2.5 py-1.5 rounded-lg text-xs font-medium text-stone-700 hover:bg-stone-900/10 transition-colors whitespace-nowrap cursor-pointer">巻貝</button>
+                    <button data-preset="clam" class="preset-btn px-2.5 py-1.5 rounded-lg text-xs font-medium text-stone-700 hover:bg-stone-900/10 transition-colors whitespace-nowrap cursor-pointer">二枚貝</button>
+                    <button data-preset="ram" class="preset-btn px-2.5 py-1.5 rounded-lg text-xs font-medium text-stone-700 hover:bg-stone-900/10 transition-colors whitespace-nowrap cursor-pointer">羊の角</button>
+                    <button data-preset="tusk" class="preset-btn px-2.5 py-1.5 rounded-lg text-xs font-medium text-stone-700 hover:bg-stone-900/10 transition-colors whitespace-nowrap cursor-pointer">象の牙</button>
+                    <div class="w-px h-4 bg-stone-300 mx-0.5"></div>
+                    <button id="random-btn" class="px-2.5 py-1.5 rounded-lg text-xs font-medium text-[#b85d3b] hover:bg-[#b85d3b]/10 transition-colors whitespace-nowrap cursor-pointer flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        <span>ランダム</span>
+                    </button>
+                </div>
+
+                <!-- コレクションケース開閉ボタン -->
+                <div class="relative">
+                    <button id="open-collection-btn" class="glass-panel inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-stone-800 hover:bg-white transition-all active:scale-95 cursor-pointer">
+                        <svg class="w-3.5 h-3.5 text-[#b85d3b]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                        <span>COLLECTION</span>
+                        <span id="collection-count-badge" class="font-mono-tech text-[10px] px-1.5 py-0.5 rounded-full bg-stone-900 text-[#faf9f6]">0/10</span>
+                    </button>
+                    <div id="toast-msg" class="absolute left-0 top-full mt-1.5 glass-panel px-3 py-1.5 rounded-xl text-xs font-medium text-[#b85d3b] whitespace-nowrap opacity-0 pointer-events-none transition-opacity duration-300 shadow-md z-20"></div>
+                </div>
+            </div>
+            <!-- 右上：標本分類タブ ＋ 標本保存アクション（④ REAL/UNOCCUPIED表示削除、① 操作ガイドをパラメータ枠へ移動） -->
+            <div class="flex flex-col items-end gap-2 pointer-events-auto sm:min-w-[280px] max-w-sm">
+                <div id="specimen-card" class="glass-panel px-4 py-3 rounded-2xl w-full transition-all duration-300">
+                    <div class="flex items-start justify-between gap-2">
+                        <div>
+                            <h2 id="specimen-name-ja" class="text-base sm:text-lg font-bold text-stone-900 leading-tight">
+                                オウムガイ
+                            </h2>
+                            <p id="specimen-name-en" class="font-mono-tech text-[11px] text-stone-500 mt-0.5">
+                                Nautilus pompilius
+                            </p>
+                        </div>
+                        <button id="toggle-specimen-desc-btn" class="inline-flex items-center gap-1 font-mono-tech text-[10px] font-semibold px-2 py-1 rounded-md bg-stone-900/5 text-stone-700 hover:bg-stone-900/10 transition-colors cursor-pointer shrink-0">
+                            <span>解説</span>
+                            <svg id="specimen-desc-chevron" class="w-3 h-3 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <!-- 開閉式解説タブパネル -->
+                    <div id="specimen-desc-panel" class="hidden mt-2 pt-2 border-t border-stone-900/10">
+                        <p id="specimen-desc" class="text-xs text-stone-600 leading-relaxed">
+                            平面上で均等に拡大しながら重なり合って巻く黄金比に近い螺旋。
+                        </p>
+                    </div>
+
+                    <!-- 標本名入力 & コレクション保存バー（① COLLECT & COLLECTIONと同じアイコン） -->
+                    <div class="mt-3 pt-2.5 border-t border-stone-900/10 flex items-center gap-2">
+                        <input type="text" id="custom-name-input" maxlength="24" placeholder="標本名を入力 (任意)..." class="flex-1 min-w-0 bg-white/70 border border-stone-900/15 rounded-lg px-2.5 py-1.5 text-xs text-stone-900 placeholder-stone-400 focus:outline-none focus:border-[#b85d3b]">
+                        <button id="collect-btn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-900 text-[#faf9f6] font-mono-tech text-xs font-semibold hover:bg-[#b85d3b] transition-colors active:scale-95 cursor-pointer whitespace-nowrap shadow-sm">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            </svg>
+                            <span id="collect-btn-text">COLLECT</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 下部：タブ切り替え式コントロールパネル（形状 / 質感・色・装飾 / ナイトモード） -->
+        <div class="w-full max-w-4xl mx-auto pointer-events-auto">
+            <div class="glass-panel rounded-2xl sm:rounded-3xl p-3.5 sm:p-5">
+                
+                <!-- タブヘッダー（② ナンバリング・茶色の点削除、⑤ ナイトモードボタン追加、① 右上に操作ガイド配置） -->
+                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-stone-900/10 pb-2.5 mb-3.5">
+                    <div class="flex items-center gap-1.5 bg-stone-900/5 p-1 rounded-xl">
+                        <button id="tab-btn-shape" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-stone-900 shadow-sm transition-all cursor-pointer">
+                            形状 (W · D · T)
+                        </button>
+                        <button id="tab-btn-style" class="px-3 py-1.5 rounded-lg text-xs font-medium text-stone-600 hover:text-stone-900 transition-all cursor-pointer">
+                            質感・色・装飾
+                        </button>
+                        <button id="sim-night-btn" class="px-3 py-1.5 rounded-lg text-xs font-medium text-stone-600 hover:text-stone-900 transition-all cursor-pointer inline-flex items-center gap-1.5" title="ナイトモード切り替え">
+                            <span class="night-icon inline-flex items-center">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                                </svg>
+                            </span>
+                            <span class="night-label">ナイトモード</span>
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-3 ml-auto">
+                        <span class="text-[11px] text-stone-500 font-medium">
+                            <span class="hidden md:inline">ドラッグで視点回転・ピンチで拡大縮小</span>
+                            <span class="inline md:hidden">スワイプで視点回転・ピンチで拡大縮小</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- タブ1: 3つのパラメータスライダー -->
+                <div id="panel-shape" class="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-6">
+                    <!-- パラメータ 1: W (WIDENS / TURN) -->
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between items-baseline">
+                            <div>
+                                <span class="font-mono-tech font-bold text-sm text-[#b85d3b]">W</span>
+                                <span class="font-mono-tech text-[11px] font-semibold tracking-wider text-stone-700 ml-1">WIDENS / TURN</span>
+                            </div>
+                            <span id="val-w" class="font-mono-tech text-xs font-semibold px-2 py-0.5 rounded bg-stone-900/5 text-stone-900">3.00</span>
+                        </div>
+                        <input type="range" id="slider-w" min="0" max="100" step="0.1" value="28">
+                        <div class="flex justify-between text-[10px] text-stone-500">
+                            <span>1回転ごとの管の拡大率</span>
+                            <span id="hint-w" class="font-medium text-stone-700">標準 (巻貝・オウムガイ)</span>
+                        </div>
+                    </div>
+
+                    <!-- パラメータ 2: D (DISTANCE FROM AXIS) -->
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between items-baseline">
+                            <div>
+                                <span class="font-mono-tech font-bold text-sm text-[#b85d3b]">D</span>
+                                <span class="font-mono-tech text-[11px] font-semibold tracking-wider text-stone-700 ml-1">DISTANCE FROM AXIS</span>
+                            </div>
+                            <span id="val-d" class="font-mono-tech text-xs font-semibold px-2 py-0.5 rounded bg-stone-900/5 text-stone-900">0.05</span>
+                        </div>
+                        <input type="range" id="slider-d" min="0" max="0.85" step="0.005" value="0.05">
+                        <div class="flex justify-between text-[10px] text-stone-500">
+                            <span>中心軸からの距離</span>
+                            <span id="hint-d" class="font-medium text-stone-700">密着 (隙間なし)</span>
+                        </div>
+                    </div>
+
+                    <!-- パラメータ 3: T (DROP / TURN) -->
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between items-baseline">
+                            <div>
+                                <span class="font-mono-tech font-bold text-sm text-[#b85d3b]">T</span>
+                                <span class="font-mono-tech text-[11px] font-semibold tracking-wider text-stone-700 ml-1">DROP / TURN</span>
+                            </div>
+                            <span id="val-t" class="font-mono-tech text-xs font-semibold px-2 py-0.5 rounded bg-stone-900/5 text-stone-900">0.00</span>
+                        </div>
+                        <input type="range" id="slider-t" min="0" max="3.5" step="0.01" value="0.00">
+                        <div class="flex justify-between text-[10px] text-stone-500">
+                            <span>1回転ごとの垂直降下量</span>
+                            <span id="hint-t" class="font-medium text-stone-700">平面螺旋</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- タブ2: 質感（テクスチャ）・カラー・立体装飾 -->
+                <div id="panel-style" class="hidden grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+                    
+                    <!-- カラム1: 表面テクスチャ＆光沢仕上げ -->
+                    <div class="space-y-2.5">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[11px] font-bold tracking-wider uppercase text-stone-700">表面テクスチャ (Texture)</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-1.5">
+                            <button data-tex="nautilus" class="tex-btn px-2 py-1.5 rounded-lg text-[11px] font-semibold bg-stone-900 text-white transition-all cursor-pointer">貝殻・縞</button>
+                            <button data-tex="clam" class="tex-btn px-2 py-1.5 rounded-lg text-[11px] font-medium bg-stone-900/5 text-stone-700 hover:bg-stone-900/10 transition-all cursor-pointer">二枚貝・肋</button>
+                            <button data-tex="horn" class="tex-btn px-2 py-1.5 rounded-lg text-[11px] font-medium bg-stone-900/5 text-stone-700 hover:bg-stone-900/10 transition-all cursor-pointer">角・象牙</button>
+                        </div>
+                        <div class="pt-1">
+                            <div class="flex justify-between text-[10px] text-stone-500 mb-1">
+                                <span>表面の光沢 (Roughness / Pearl)</span>
+                            </div>
+                            <div class="grid grid-cols-3 gap-1.5">
+                                <button data-finish="matte" class="finish-btn py-1 rounded-md text-[10px] font-semibold bg-stone-900 text-white cursor-pointer">石灰マット</button>
+                                <button data-finish="satin" class="finish-btn py-1 rounded-md text-[10px] font-medium bg-stone-900/5 text-stone-700 hover:bg-stone-900/10 cursor-pointer">自然サテン</button>
+                                <button data-finish="pearl" class="finish-btn py-1 rounded-md text-[10px] font-medium bg-stone-900/5 text-stone-700 hover:bg-stone-900/10 cursor-pointer">真珠光沢</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- カラム2: カラーカスタマイズ -->
+                    <div class="space-y-2.5">
+                        <span class="block text-[11px] font-bold tracking-wider uppercase text-stone-700">カラーリング (Colors)</span>
+                        <div class="flex items-center justify-between gap-3 bg-stone-900/5 p-2 rounded-xl">
+                            <label class="flex items-center gap-2 text-xs text-stone-700 cursor-pointer">
+                                <input type="color" id="color-base" value="#efe9dc" class="w-6 h-6">
+                                <span>地色 (Base)</span>
+                            </label>
+                            <div class="w-px h-5 bg-stone-300"></div>
+                            <label class="flex items-center gap-2 text-xs text-stone-700 cursor-pointer">
+                                <input type="color" id="color-pattern" value="#b85d3b" class="w-6 h-6">
+                                <span>模様 (Stripe)</span>
+                            </label>
+                        </div>
+                        <!-- クイック自然色スウォッチ -->
+                        <div class="flex items-center justify-between gap-1.5 pt-0.5">
+                            <span class="text-[10px] text-stone-500">テンプレート:</span>
+                            <div class="flex items-center gap-1.5">
+                                <button data-base="#efe9dc" data-pat="#b85d3b" class="swatch-btn w-5 h-5 rounded-full border border-stone-400 shadow-sm cursor-pointer" style="background: linear-gradient(135deg, #efe9dc 50%, #b85d3b 50%);" title="オウムガイ・クリーム"></button>
+                                <button data-base="#f4d5cc" data-pat="#c94a4a" class="swatch-btn w-5 h-5 rounded-full border border-stone-400 shadow-sm cursor-pointer" style="background: linear-gradient(135deg, #f4d5cc 50%, #c94a4a 50%);" title="サンゴピンク"></button>
+                                <button data-base="#d9e6e2" data-pat="#2e6f65" class="swatch-btn w-5 h-5 rounded-full border border-stone-400 shadow-sm cursor-pointer" style="background: linear-gradient(135deg, #d9e6e2 50%, #2e6f65 50%);" title="翡翠シェル"></button>
+                                <button data-base="#4a4036" data-pat="#d4af37" class="swatch-btn w-5 h-5 rounded-full border border-stone-400 shadow-sm cursor-pointer" style="background: linear-gradient(135deg, #4a4036 50%, #d4af37 50%);" title="黒蝶・ゴールド"></button>
+                                <button data-base="#cbbba0" data-pat="#3e3226" class="swatch-btn w-5 h-5 rounded-full border border-stone-400 shadow-sm cursor-pointer" style="background: linear-gradient(135deg, #cbbba0 50%, #3e3226 50%);" title="野生の角"></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- カラム3: 装飾（トゲ・縦肋・真珠ビーズ） -->
+                    <div class="space-y-2.5">
+                        <span class="block text-[11px] font-bold tracking-wider uppercase text-stone-700">装飾 (Ornaments)</span>
+                        <div class="grid grid-cols-3 gap-1.5">
+                            <button id="dec-spines-btn" class="dec-btn flex flex-col items-center justify-center py-2 px-1 rounded-xl border border-stone-900/10 bg-white/60 text-stone-700 hover:bg-white transition-all cursor-pointer">
+                                <svg class="w-4 h-4 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4L6 18c2 1.5 10 1.5 12 0L12 4z"></path>
+                                </svg>
+                                <span class="text-[10px] font-semibold">トゲ (Spines)</span>
+                            </button>
+                            <button id="dec-ribs-btn" class="dec-btn flex flex-col items-center justify-center py-2 px-1 rounded-xl border border-stone-900/10 bg-white/60 text-stone-700 hover:bg-white transition-all cursor-pointer">
+                                <svg class="w-4 h-4 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="7" stroke-width="2"></circle>
+                                    <circle cx="12" cy="12" r="3" stroke-width="1.5"></circle>
+                                </svg>
+                                <span class="text-[10px] font-semibold">縦肋 (Ribs)</span>
+                            </button>
+                            <button id="dec-pearls-btn" class="dec-btn flex flex-col items-center justify-center py-2 px-1 rounded-xl border border-stone-900/10 bg-white/60 text-stone-700 hover:bg-white transition-all cursor-pointer">
+                                <svg class="w-4 h-4 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="6" stroke-width="2"></circle>
+                                </svg>
+                                <span class="text-[10px] font-semibold">真珠 (Pearls)</span>
+                            </button>
+                        </div>
+                        <p class="text-[10px] text-stone-500 leading-tight">
+                            螺旋の成長曲線に沿って立体的な棘やヒダ・真珠装飾を自動生成します。
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         3. コレクションケース モーダル (COLLECTION DRAWER)
+    =========================================== -->
+    <div id="collection-modal" class="fixed inset-0 z-30 hidden items-center justify-center p-4 sm:p-6 bg-stone-900/40 backdrop-blur-sm">
+        <div class="glass-panel w-full max-w-4xl max-h-[86vh] rounded-3xl flex flex-col overflow-hidden shadow-2xl border border-stone-900/15 bg-[#faf9f6]/95">
+            <!-- ヘッダー -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-stone-900/10">
+                <div>
+                    <div class="flex items-center gap-2.5">
+                        <h3 class="text-lg font-bold text-stone-900">SPECIMEN COLLECTION</h3>
+                        <span id="modal-count-badge" class="font-mono-tech text-xs font-bold px-2.5 py-0.5 rounded-full bg-stone-900 text-[#faf9f6]">0 / 10</span>
+                    </div>
+                    <p class="text-xs text-stone-500 mt-0.5">お気に入りの標本を最大10個まで保存し、いつでも3Dステージへ呼び出せます。</p>
+                </div>
+                <button id="close-collection-btn" class="p-2 rounded-xl text-stone-500 hover:text-stone-900 hover:bg-stone-900/5 transition-colors cursor-pointer">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- コレクション一覧グリッド -->
+            <div id="collection-grid" class="p-6 overflow-y-auto museum-scroll grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 flex-1">
+                <!-- JSで動的に標本カードを生成 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * ONE RULE, THREE NUMBERS
+         * David Raup (1966) の対数螺旋巻貝モデルに基づく3Dプロシージャル生成エンジン
+         * テクスチャ生成・カスタム装飾・標本コレクション(上限10)対応版
+         */
+
+        // ==========================================
+        // 1. 状態管理とプリセット定義
+        // ==========================================
+        const MAX_COLLECTION = 10;
+        const STORAGE_KEY = 'raup_shell_collection_v1';
+
+        const PRESETS = {
+            nautilus: {
+                w: 3.1, d: 0.04, t: 0.00,
+                textureType: 'nautilus',
+                baseColor: '#efe9dc',
+                patternColor: '#b85d3b',
+                finish: 'matte',
+                decorations: { spines: false, ribs: false, pearls: false }
+            },
+            snail: {
+                w: 2.2, d: 0.12, t: 1.65,
+                textureType: 'nautilus',
+                baseColor: '#e8dcc4',
+                patternColor: '#7c583a',
+                finish: 'matte',
+                decorations: { spines: false, ribs: false, pearls: false }
+            },
+            clam: {
+                w: 120.0, d: 0.02, t: 0.08,
+                textureType: 'clam',
+                baseColor: '#f2eee6',
+                patternColor: '#a68c72',
+                finish: 'matte',
+                decorations: { spines: false, ribs: false, pearls: false }
+            },
+            ram: {
+                w: 2.6, d: 0.48, t: 0.95,
+                textureType: 'horn',
+                baseColor: '#cbbba0',
+                patternColor: '#5c4d3c',
+                finish: 'matte',
+                decorations: { spines: false, ribs: false, pearls: false }
+            },
+            tusk: {
+                w: 8.5, d: 0.72, t: 0.00,
+                textureType: 'horn',
+                baseColor: '#f7f3e8',
+                patternColor: '#d9cfb8',
+                finish: 'matte',
+                decorations: { spines: false, ribs: false, pearls: false }
+            }
+        };
+
+        const state = {
+            mode: 'title', // 'title' | 'sim'
+            w: 3.1,
+            d: 0.04,
+            t: 0.00,
+            targetW: 3.1,
+            targetD: 0.04,
+            targetT: 0.00,
+            isMorphing: false,
+            // カスタマイズ状態（デフォルトは石灰マット）
+            textureType: 'nautilus', // 'nautilus' | 'clam' | 'horn'
+            baseColor: '#efe9dc',
+            patternColor: '#b85d3b',
+            finish: 'matte', // 'matte' | 'satin' | 'pearl'
+            decorations: {
+                spines: false,
+                ribs: false,
+                pearls: false
+            },
+            // 現在の分類情報
+            currentClassification: {
+                isReal: true,
+                nameJa: 'オウムガイ',
+                nameEn: 'Nautilus pompilius'
+            },
+            // ナイトモード状態
+            isNightMode: false,
+            // コレクション配列
+            collection: [],
+            // カメラ軌道制御
+            rotX: 0.35,
+            rotY: -0.6,
+            zoom: 1.0,
+            isDragging: false,
+            prevMouseX: 0,
+            prevMouseY: 0,
+            pinchStartDist: 0,
+            pinchStartZoom: 1.0
+        };
+
+        // スライダー(0〜100)と W(1.35〜400) の対数マッピング
+        function sliderToW(s) {
+            const minLog = Math.log(1.35);
+            const maxLog = Math.log(400.0);
+            const normalized = Math.pow(s / 100, 1.45);
+            return Math.exp(minLog + normalized * (maxLog - minLog));
+        }
+
+        function wToSlider(w) {
+            const minLog = Math.log(1.35);
+            const maxLog = Math.log(400.0);
+            const clamped = Math.max(1.35, Math.min(400.0, w));
+            const normalized = (Math.log(clamped) - minLog) / (maxLog - minLog);
+            return Math.pow(normalized, 1 / 1.45) * 100;
+        }
+
+        // HEXカラーをRGBオブジェクトに変換
+        function hexToRgb(hex) {
+            const clean = hex.replace('#', '');
+            const num = parseInt(clean, 16);
+            return {
+                r: (num >> 16) & 255,
+                g: (num >> 8) & 255,
+                b: num & 255
+            };
+        }
+
+        // ==========================================
+        // 2. Three.js シーン・ライティング・プロシージャルテクスチャ構築
+        // ==========================================
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xf3f1ed);
+        scene.fog = new THREE.FogExp2(0xf3f1ed, 0.032);
+
+        const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.05, 100);
+        camera.position.set(0, 0, 6.2);
+
+        // サムネイル撮影用に preserveDrawingBuffer: true を有効化
+        const renderer = new THREE.WebGLRenderer({
+            antialias: true,
+            powerPreference: 'high-performance',
+            preserveDrawingBuffer: true
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.05;
+        container.appendChild(renderer.domElement);
+
+        // スタジオライティング（自然史博物館の展示ケース風）
+        const ambientLight = new THREE.AmbientLight(0xfffcf5, 0.65);
+        scene.add(ambientLight);
+
+        const keyLight = new THREE.DirectionalLight(0xfff8ee, 1.2);
+        keyLight.position.set(5, 8, 7);
+        keyLight.castShadow = true;
+        scene.add(keyLight);
+
+        const fillLight = new THREE.DirectionalLight(0xdbe7f5, 0.48);
+        fillLight.position.set(-6, -2, 4);
+        scene.add(fillLight);
+
+        const rimLight = new THREE.DirectionalLight(0xffeedd, 0.6);
+        rimLight.position.set(0, 5, -7);
+        scene.add(rimLight);
+
+        // ① 貝や角の動的プロシージャルテクスチャ（カラーマップ ＋ バンプマップ）生成
+        let currentColorTex = null;
+        let currentBumpTex = null;
+
+        function updateProceduralTextures() {
+            const width = 512;
+            const height = 512;
+
+            // カラー用キャンバス & バンプ(凹凸)用キャンバス
+            const colorCanvas = document.createElement('canvas');
+            colorCanvas.width = width;
+            colorCanvas.height = height;
+            const ctx = colorCanvas.getContext('2d');
+
+            const bumpCanvas = document.createElement('canvas');
+            bumpCanvas.width = width;
+            bumpCanvas.height = height;
+            const bCtx = bumpCanvas.getContext('2d');
+
+            const base = hexToRgb(state.baseColor);
+            const pat = hexToRgb(state.patternColor);
+
+            // ベース塗りつぶし
+            ctx.fillStyle = `rgb(${base.r}, ${base.g}, ${base.b})`;
+            ctx.fillRect(0, 0, width, height);
+
+            bCtx.fillStyle = 'rgb(128, 128, 128)';
+            bCtx.fillRect(0, 0, width, height);
+
+            if (state.textureType === 'nautilus') {
+                // 【貝殻・オウムガイ・巻貝】
+                // U方向(横軸): 成長輪(Growth lines) + オウムガイ特有の炎のような横縞模様
+                for (let x = 0; x < width; x++) {
+                    // 微細な成長線
+                    const fineLine = Math.sin(x * 0.45) * 0.5 + 0.5;
+                    ctx.fillStyle = `rgba(${pat.r}, ${pat.g}, ${pat.b}, ${0.03 + fineLine * 0.05})`;
+                    ctx.fillRect(x, 0, 1, height);
+
+                    const bumpVal = Math.floor(120 + fineLine * 24);
+                    bCtx.fillStyle = `rgb(${bumpVal}, ${bumpVal}, ${bumpVal})`;
+                    bCtx.fillRect(x, 0, 1, height);
+                }
+
+                // 螺旋に沿った帯模様・炎状ストライプ
+                for (let x = 0; x < width; x += 32) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    for (let y = 0; y <= height; y += 16) {
+                        const wave = Math.sin((y / height) * Math.PI * 2) * 10;
+                        ctx.lineTo(x + wave, y);
+                    }
+                    ctx.lineWidth = 11;
+                    ctx.strokeStyle = `rgba(${pat.r}, ${pat.g}, ${pat.b}, 0.42)`;
+                    ctx.stroke();
+                }
+
+                // V方向(縦軸)の螺旋バンド
+                const grad = ctx.createLinearGradient(0, 0, 0, height);
+                grad.addColorStop(0.0, `rgba(${pat.r}, ${pat.g}, ${pat.b}, 0.25)`);
+                grad.addColorStop(0.3, `rgba(${pat.r}, ${pat.g}, ${pat.b}, 0.0)`);
+                grad.addColorStop(0.55, `rgba(${pat.r}, ${pat.g}, ${pat.b}, 0.18)`);
+                grad.addColorStop(0.85, `rgba(${pat.r}, ${pat.g}, ${pat.b}, 0.0)`);
+                grad.addColorStop(1.0, `rgba(${pat.r}, ${pat.g}, ${pat.b}, 0.25)`);
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, width, height);
+
+            } else if (state.textureType === 'clam') {
+                // 【二枚貝・ホタテ貝】
+                // V方向(縦軸): 放射肋 (Radial ribs - 管の進行方向に走る強い溝と山)
+                const numRibs = 22;
+                for (let y = 0; y < height; y++) {
+                    const ribPhase = (y / height) * Math.PI * 2 * numRibs;
+                    const ribHeight = Math.sin(ribPhase) * 0.5 + 0.5; // 0〜1
+
+                    // 谷の部分にパターン色を乗せる
+                    const alpha = (1.0 - ribHeight) * 0.45;
+                    ctx.fillStyle = `rgba(${pat.r}, ${pat.g}, ${pat.b}, ${alpha})`;
+                    ctx.fillRect(0, y, width, 1);
+
+                    // バンプマップに強い放射状の凹凸を刻む
+                    const bumpVal = Math.floor(65 + ribHeight * 155);
+                    bCtx.fillStyle = `rgb(${bumpVal}, ${bumpVal}, ${bumpVal})`;
+                    bCtx.fillRect(0, y, width, 1);
+                }
+
+                // U方向(横軸): 段差のある成長輪 (Concentric growth rings)
+                for (let x = 0; x < width; x += 24) {
+                    ctx.fillStyle = `rgba(${pat.r}, ${pat.g}, ${pat.b}, 0.22)`;
+                    ctx.fillRect(x, 0, 3, height);
+
+                    bCtx.fillStyle = 'rgb(70, 70, 70)';
+                    bCtx.fillRect(x, 0, 3, height);
+                }
+
+            } else if (state.textureType === 'horn') {
+                // 【羊の角・象牙 (Keratin Ridges & Ivory Grain)】
+                // U方向(横軸): 角特有の深く荒々しい輪状の節（ケラチン成長輪）
+                for (let x = 0; x < width; x++) {
+                    // 大小の節が重なる有機的な波形
+                    const majorRing = Math.sin(x * 0.22) * 0.6 + Math.sin(x * 0.09) * 0.4;
+                    const norm = majorRing * 0.5 + 0.5;
+
+                    const alpha = (1.0 - norm) * 0.52;
+                    ctx.fillStyle = `rgba(${pat.r}, ${pat.g}, ${pat.b}, ${alpha})`;
+                    ctx.fillRect(x, 0, 1, height);
+
+                    // 深い凹凸バンプ
+                    const bumpVal = Math.floor(55 + norm * 170);
+                    bCtx.fillStyle = `rgb(${bumpVal}, ${bumpVal}, ${bumpVal})`;
+                    bCtx.fillRect(x, 0, 1, height);
+                }
+
+                // 縦方向の繊維質スジ（角の縦割れ・象牙のシュレーゲル線風）
+                for (let y = 0; y < height; y += 3) {
+                    const fiber = Math.sin(y * 0.7) * 0.5 + 0.5;
+                    ctx.fillStyle = `rgba(${pat.r}, ${pat.g}, ${pat.b}, ${fiber * 0.14})`;
+                    ctx.fillRect(0, y, width, 1);
+                }
+            }
+
+            if (currentColorTex) currentColorTex.dispose();
+            if (currentBumpTex) currentBumpTex.dispose();
+
+            currentColorTex = new THREE.CanvasTexture(colorCanvas);
+            currentColorTex.wrapS = THREE.RepeatWrapping;
+            currentColorTex.wrapT = THREE.RepeatWrapping;
+            currentColorTex.repeat.set(8, 1);
+
+            currentBumpTex = new THREE.CanvasTexture(bumpCanvas);
+            currentBumpTex.wrapS = THREE.RepeatWrapping;
+            currentBumpTex.wrapT = THREE.RepeatWrapping;
+            currentBumpTex.repeat.set(8, 1);
+
+            outerMaterial.map = currentColorTex;
+            outerMaterial.bumpMap = currentBumpTex;
+
+            // テクスチャ種類に応じたバンプの深さ調整
+            if (state.textureType === 'horn') outerMaterial.bumpScale = 0.045;
+            else if (state.textureType === 'clam') outerMaterial.bumpScale = 0.038;
+            else outerMaterial.bumpScale = 0.015;
+
+            // 表面仕上げ（マット・サテン・真珠光沢）の反映
+            if (state.finish === 'matte') {
+                outerMaterial.roughness = 0.78;
+                outerMaterial.metalness = 0.02;
+                outerMaterial.clearcoat = 0.0;
+            } else if (state.finish === 'satin') {
+                outerMaterial.roughness = 0.36;
+                outerMaterial.metalness = 0.06;
+                outerMaterial.clearcoat = 0.25;
+                outerMaterial.clearcoatRoughness = 0.25;
+            } else if (state.finish === 'pearl') {
+                outerMaterial.roughness = 0.16;
+                outerMaterial.metalness = 0.14;
+                outerMaterial.clearcoat = 0.85;
+                outerMaterial.clearcoatRoughness = 0.1;
+            }
+
+            outerMaterial.needsUpdate = true;
+
+            // 装飾マテリアルの色も同期
+            ornamentSpineMat.color.set(state.patternColor);
+            ornamentRibMat.color.set(state.baseColor);
+            ornamentRibMat.roughness = outerMaterial.roughness;
+        }
+
+        // 外側マテリアル（MeshPhysicalMaterial で真珠層・クリアコート光沢まで表現）
+        const outerMaterial = new THREE.MeshPhysicalMaterial({
+            roughness: 0.36,
+            metalness: 0.06,
+            clearcoat: 0.25,
+            side: THREE.FrontSide
+        });
+
+        // 内側マテリアル
+        const innerMaterial = new THREE.MeshStandardMaterial({
+            color: 0x3b332b,
+            roughness: 0.65,
+            metalness: 0.05,
+            side: THREE.BackSide
+        });
+
+        // 装飾用マテリアル（トゲ・縦肋・真珠ビーズ）
+        const ornamentSpineMat = new THREE.MeshStandardMaterial({
+            color: 0xb85d3b,
+            roughness: 0.35,
+            metalness: 0.08
+        });
+        const ornamentRibMat = new THREE.MeshPhysicalMaterial({
+            color: 0xefe9dc,
+            roughness: 0.3,
+            clearcoat: 0.4
+        });
+
+        // ④ 真珠のキラキラ虹色テクスチャ＆バンプマップ（大きさ・色は固定しテクスチャの反射で輝かせる）
+        function createPearlTextures() {
+            const size = 256;
+            const cCanvas = document.createElement('canvas');
+            cCanvas.width = size;
+            cCanvas.height = size;
+            const ctx = cCanvas.getContext('2d');
+
+            // 真珠母層のベース白〜淡い虹色グラデーション
+            const grad = ctx.createRadialGradient(size * 0.35, size * 0.35, 10, size * 0.5, size * 0.5, size * 0.7);
+            grad.addColorStop(0.0, '#ffffff');
+            grad.addColorStop(0.45, '#fdf7fa');
+            grad.addColorStop(0.75, '#f2f7fc');
+            grad.addColorStop(1.0, '#f9f3eb');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, size, size);
+
+            // 結晶ラメ（スパークル粒子）をテクスチャ上に焼き込む
+            const bCanvas = document.createElement('canvas');
+            bCanvas.width = size;
+            bCanvas.height = size;
+            const bCtx = bCanvas.getContext('2d');
+            bCtx.fillStyle = 'rgb(128, 128, 128)';
+            bCtx.fillRect(0, 0, size, size);
+
+            for (let i = 0; i < 420; i++) {
+                const x = (Math.sin(i * 12.9898) * 43758.5453 % 1 + 1) % 1 * size;
+                const y = (Math.sin(i * 78.233) * 43758.5453 % 1 + 1) % 1 * size;
+                const r = (i % 3 === 0) ? 2.2 : 1.1;
+
+                // 虹色の微細光沢ドット
+                const hues = ['rgba(255, 220, 240, 0.9)', 'rgba(220, 245, 255, 0.9)', 'rgba(255, 250, 220, 0.95)'];
+                ctx.fillStyle = hues[i % hues.length];
+                ctx.beginPath();
+                ctx.arc(x, y, r, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 光を乱反射するファセット凹凸
+                bCtx.fillStyle = (i % 2 === 0) ? 'rgb(245, 245, 245)' : 'rgb(30, 30, 30)';
+                bCtx.fillRect(x, y, r * 1.4, r * 1.4);
+            }
+
+            const map = new THREE.CanvasTexture(cCanvas);
+            map.wrapS = THREE.RepeatWrapping;
+            map.wrapT = THREE.RepeatWrapping;
+
+            const bumpMap = new THREE.CanvasTexture(bCanvas);
+            bumpMap.wrapS = THREE.RepeatWrapping;
+            bumpMap.wrapT = THREE.RepeatWrapping;
+
+            return { map, bumpMap };
+        }
+
+        const pearlTextures = createPearlTextures();
+        const ornamentPearlMat = new THREE.MeshPhysicalMaterial({
+            color: 0xffffff,
+            map: pearlTextures.map,
+            bumpMap: pearlTextures.bumpMap,
+            bumpScale: 0.018,
+            roughness: 0.06,
+            metalness: 0.28,
+            clearcoat: 1.0,
+            clearcoatRoughness: 0.02,
+            sheen: new THREE.Color(0xffe6f7),
+            reflectivity: 1.0
+        });
+
+        // メッシュをまとめるグループ
+        const shellGroup = new THREE.Group();
+        scene.add(shellGroup);
+
+        let outerMesh = null;
+        let innerMesh = null;
+        let ornamentGroup = new THREE.Group();
+        shellGroup.add(ornamentGroup);
+
+        // ==========================================
+        // 3. ラウプの巻貝アルゴリズム ＋ 3D立体装飾生成
+        // ==========================================
+        function buildRaupShell(W, D, T) {
+            const safeW = Math.max(1.15, Math.min(600, W));
+            const safeD = Math.max(0.0, Math.min(0.95, D));
+            const safeT = Math.max(0.0, Math.min(5.0, T));
+
+            const b = Math.log(safeW) / (2 * Math.PI);
+
+            let maxTurns = 3.6;
+            if (safeW > 50) maxTurns = 0.65;
+            else if (safeW > 15) maxTurns = 1.15;
+            else if (safeW > 6) maxTurns = 1.85;
+            else if (safeW > 3.5) maxTurns = 2.75;
+
+            const thetaMin = -maxTurns * Math.PI * 2;
+            const thetaMax = 0.0;
+
+            const uSteps = 160;
+            const vSteps = 40;
+
+            const a0 = 1.0;
+            const R0 = a0 * (1.0 + safeD) / Math.max(0.05, 1.0 - safeD);
+            const Z0 = R0 * safeT * 0.55;
+
+            const numVerts = (uSteps + 1) * (vSteps + 1);
+            const positions = new Float32Array(numVerts * 3);
+            const uvs = new Float32Array(numVerts * 2);
+
+            let vIdx = 0;
+            let uvIdx = 0;
+
+            let minX = Infinity, maxX = -Infinity;
+            let minY = Infinity, maxY = -Infinity;
+            let minZ = Infinity, maxZ = -Infinity;
+
+            // 螺旋上のサンプルポイント計算関数（本体と3D装飾の座標一致のため共通化）
+            function sampleShellPoint(theta, phi) {
+                const scale = Math.exp(b * theta);
+                const rCenter = R0 * scale;
+                const zCenter = -Z0 * scale;
+                const aRadius = a0 * scale;
+
+                const cosTheta = Math.cos(theta);
+                const sinTheta = Math.sin(theta);
+
+                const radialOffset = aRadius * Math.cos(phi);
+                const verticalOffset = aRadius * 0.92 * Math.sin(phi);
+
+                const r = rCenter + radialOffset;
+                const x = r * cosTheta;
+                const z = r * sinTheta;
+                const y = zCenter + verticalOffset;
+
+                // 外向き法線ベクトル（装飾の向き用）
+                const nx = Math.cos(phi) * cosTheta;
+                const ny = Math.sin(phi);
+                const nz = Math.cos(phi) * sinTheta;
+
+                return { x, y, z, aRadius, nx, ny, nz, rCenter, zCenter, cosTheta, sinTheta };
+            }
+
+            for (let i = 0; i <= uSteps; i++) {
+                const u = i / uSteps;
+                const theta = thetaMin + u * (thetaMax - thetaMin);
+
+                for (let j = 0; j <= vSteps; j++) {
+                    const v = j / vSteps;
+                    const phi = v * Math.PI * 2;
+
+                    const pt = sampleShellPoint(theta, phi);
+
+                    positions[vIdx++] = pt.x;
+                    positions[vIdx++] = pt.y;
+                    positions[vIdx++] = pt.z;
+
+                    uvs[uvIdx++] = u * maxTurns * 2.0;
+                    uvs[uvIdx++] = v;
+
+                    if (pt.x < minX) minX = pt.x;
+                    if (pt.x > maxX) maxX = pt.x;
+                    if (pt.y < minY) minY = pt.y;
+                    if (pt.y > maxY) maxY = pt.y;
+                    if (pt.z < minZ) minZ = pt.z;
+                    if (pt.z > maxZ) maxZ = pt.z;
+                }
+            }
+
+            const indices = [];
+            for (let i = 0; i < uSteps; i++) {
+                for (let j = 0; j < vSteps; j++) {
+                    const a = i * (vSteps + 1) + j;
+                    const bIdx = (i + 1) * (vSteps + 1) + j;
+                    const c = (i + 1) * (vSteps + 1) + (j + 1);
+                    const dIdx = i * (vSteps + 1) + (j + 1);
+
+                    indices.push(a, dIdx, bIdx);
+                    indices.push(bIdx, dIdx, c);
+                }
+            }
+
+            // センタリングと正規化スケール算出
+            const centerX = (minX + maxX) * 0.5;
+            const centerY = (minY + maxY) * 0.5;
+            const centerZ = (minZ + maxZ) * 0.5;
+            const sizeX = maxX - minX;
+            const sizeY = maxY - minY;
+            const sizeZ = maxZ - minZ;
+            const maxDim = Math.max(sizeX, sizeY, sizeZ, 0.001);
+            const normScale = 2.75 / maxDim;
+
+            for (let k = 0; k < positions.length; k += 3) {
+                positions[k] = (positions[k] - centerX) * normScale;
+                positions[k + 1] = (positions[k + 1] - centerY) * normScale;
+                positions[k + 2] = (positions[k + 2] - centerZ) * normScale;
+            }
+
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+            geometry.setIndex(indices);
+            geometry.computeVertexNormals();
+
+            if (outerMesh) {
+                shellGroup.remove(outerMesh);
+                outerMesh.geometry.dispose();
+            }
+            if (innerMesh) {
+                shellGroup.remove(innerMesh);
+                innerMesh.geometry.dispose();
+            }
+
+            outerMesh = new THREE.Mesh(geometry, outerMaterial);
+            innerMesh = new THREE.Mesh(geometry, innerMaterial);
+
+            shellGroup.add(outerMesh);
+            shellGroup.add(innerMesh);
+
+            // ==========================================
+            // 3D立体装飾の生成（トゲ・縦肋・真珠ビーズ）
+            // ==========================================
+            // 既存装飾のクリア
+            while (ornamentGroup.children.length > 0) {
+                const child = ornamentGroup.children[0];
+                if (child.geometry) child.geometry.dispose();
+                ornamentGroup.remove(child);
+            }
+
+            const { spines, ribs, pearls } = state.decorations;
+            if (spines || ribs || pearls) {
+                const stepAngle = Math.PI / 5; // 36度ごとに配置
+                const upVec = new THREE.Vector3(0, 1, 0);
+
+                // ③ トゲ・縦肋・真珠の位置（位相・断面角）が重ならないようオフセットを分離
+                // 1. 縦肋 (Axial Ribs - 整数倍の位相: thetaMax - 0.15)
+                if (ribs) {
+                    for (let theta = thetaMax - 0.15; theta > thetaMin + 0.3; theta -= stepAngle) {
+                        const basePt = sampleShellPoint(theta, 0);
+                        const scaledRadius = basePt.aRadius * normScale;
+                        if (scaledRadius < 0.025) break;
+
+                        const torusGeo = new THREE.TorusGeometry(scaledRadius * 0.96, scaledRadius * 0.055, 10, 28);
+                        const ribMesh = new THREE.Mesh(torusGeo, ornamentRibMat);
+
+                        ribMesh.position.set(
+                            (basePt.rCenter * basePt.cosTheta - centerX) * normScale,
+                            (basePt.zCenter - centerY) * normScale,
+                            (basePt.rCenter * basePt.sinTheta - centerZ) * normScale
+                        );
+
+                        const tangent = new THREE.Vector3(-basePt.sinTheta, 0, basePt.cosTheta).normalize();
+                        const zAxis = new THREE.Vector3(0, 0, 1);
+                        ribMesh.quaternion.setFromUnitVectors(zAxis, tangent);
+                        ornamentGroup.add(ribMesh);
+                    }
+                }
+
+                // 2. トゲ (Spines - 縦肋の中間位相 stepAngle * 0.5 ずらし、外周側に配置)
+                if (spines) {
+                    const spineThetaOffset = stepAngle * 0.5;
+                    for (let theta = thetaMax - 0.15 - spineThetaOffset; theta > thetaMin + 0.3; theta -= stepAngle) {
+                        const basePt = sampleShellPoint(theta, 0);
+                        const scaledRadius = basePt.aRadius * normScale;
+                        if (scaledRadius < 0.025) break;
+
+                        const spineAngles = [-0.42, 0.0, 0.42];
+                        spineAngles.forEach(phi => {
+                            const pt = sampleShellPoint(theta, phi);
+                            const spineLen = scaledRadius * 0.85;
+                            const spineBaseR = scaledRadius * 0.16;
+
+                            const coneGeo = new THREE.ConeGeometry(spineBaseR, spineLen, 10);
+                            coneGeo.translate(0, spineLen * 0.45, 0);
+
+                            const mesh = new THREE.Mesh(coneGeo, ornamentSpineMat);
+                            mesh.position.set(
+                                (pt.x - centerX) * normScale,
+                                (pt.y - centerY) * normScale,
+                                (pt.z - centerZ) * normScale
+                            );
+
+                            const normal = new THREE.Vector3(pt.nx, pt.ny, pt.nz).normalize();
+                            mesh.quaternion.setFromUnitVectors(upVec, normal);
+                            ornamentGroup.add(mesh);
+                        });
+                    }
+                }
+
+                // 3. 真珠 (Pearls - 上面肩部 phi = 1.15 に配置し、固定サイズのままテクスチャでキラキラさせる)
+                if (pearls) {
+                    const pearlThetaOffset = stepAngle * 0.25;
+                    const pearlStep = stepAngle * 0.5;
+                    const fixedPearlRadius = 0.042; // 大きさ固定
+                    for (let theta = thetaMax - 0.15 - pearlThetaOffset; theta > thetaMin + 0.3; theta -= pearlStep) {
+                        const basePt = sampleShellPoint(theta, 0);
+                        if (basePt.aRadius * normScale < 0.03) break;
+
+                        const pearlPt = sampleShellPoint(theta, 1.15);
+                        const sphereGeo = new THREE.SphereGeometry(fixedPearlRadius, 18, 18);
+                        const pearlMesh = new THREE.Mesh(sphereGeo, ornamentPearlMat);
+
+                        // 殻の表面に半分埋まるように法線方向へオフセット
+                        pearlMesh.position.set(
+                            (pearlPt.x - centerX) * normScale + pearlPt.nx * (fixedPearlRadius * 0.35),
+                            (pearlPt.y - centerY) * normScale + pearlPt.ny * (fixedPearlRadius * 0.35),
+                            (pearlPt.z - centerZ) * normScale + pearlPt.nz * (fixedPearlRadius * 0.35)
+                        );
+                        ornamentGroup.add(pearlMesh);
+                    }
+                }
+            }
+        }
+
+        // ==========================================
+        // 4. ラウプの立方体（Morphospace）標本判定ロジック
+        // ==========================================
+        function classifyMorphospace(W, D, T) {
+            const nameJa = document.getElementById('specimen-name-ja');
+            const nameEn = document.getElementById('specimen-name-en');
+            const desc = document.getElementById('specimen-desc');
+
+            const hintW = document.getElementById('hint-w');
+            const hintD = document.getElementById('hint-d');
+            const hintT = document.getElementById('hint-t');
+
+            if (W > 35) hintW.textContent = '極大 (二枚貝の蓋状)';
+            else if (W > 6) hintW.textContent = '急拡大 (牙・浅い皿)';
+            else hintW.textContent = '標準 (巻貝・オウムガイ)';
+
+            if (D < 0.14) hintD.textContent = '密着 (隙間なし)';
+            else if (D < 0.4) hintD.textContent = 'やや離れる';
+            else hintD.textContent = '大きな中心空洞';
+
+            if (T < 0.12) hintT.textContent = '平面螺旋';
+            else if (T < 1.1) hintT.textContent = '低い円錐螺旋';
+            else hintT.textContent = '塔状の立体螺旋';
+
+            let result = null;
+
+            if (W > 45 && D < 0.25 && T < 0.4) {
+                result = {
+                    isReal: true,
+                    nameJa: '二枚貝（アサリ・ホタテ型）',
+                    nameEn: 'Bivalvia (Clam / Scallop Valve)',
+                    desc: 'Wが極端に大きいため1回転する前に管が広がりきり、平たい蓋のような殻になります。'
+                };
+            } else if (W >= 2.2 && W <= 4.5 && D <= 0.14 && T <= 0.12) {
+                result = {
+                    isReal: true,
+                    nameJa: 'オウムガイ / アンモナイト',
+                    nameEn: 'Nautilus / Ammonite (Planispiral)',
+                    desc: '平面上で均等に拡大しながら前の周回に重なり合って巻く、効率的な平面螺旋です。'
+                };
+            } else if (W >= 1.5 && W <= 4.0 && D <= 0.28 && T >= 0.45 && T <= 2.8) {
+                result = {
+                    isReal: true,
+                    nameJa: '巻貝（カタツムリ・マイマイ型）',
+                    nameEn: 'Gastropoda (Conispiral Snail)',
+                    desc: 'T（垂直降下量）が大きくなることで、塔のように立体的に積み上がる典型的な巻貝です。'
+                };
+            } else if (W >= 1.8 && W <= 5.5 && D >= 0.32 && D <= 0.68 && T >= 0.3 && T <= 1.8) {
+                result = {
+                    isReal: true,
+                    nameJa: '羊の角（ラムズホーン）',
+                    nameEn: 'Ovis aries (Ram\'s Horn)',
+                    desc: '中心軸からの距離Dが大きく、周回同士が離れて中心に大きな空洞を作る角の螺旋です。'
+                };
+            } else if (W >= 5.0 && W <= 25.0 && D >= 0.48 && T <= 0.35) {
+                result = {
+                    isReal: true,
+                    nameJa: '象の牙（タスク）',
+                    nameEn: 'Proboscidea (Elephant Tusk)',
+                    desc: '大きなDと適度な拡大率Wにより、1周に満たない緩やかな弧を描く牙の形状です。'
+                };
+            } else {
+                result = {
+                    isReal: false,
+                    nameJa: '空白領域の幻の殻',
+                    nameEn: 'Unoccupied Morphospace (Theoretical)',
+                    desc: '数学的には生成可能ですが、強度不足や移動効率の悪さから現実の進化では選ばれなかった領域です。'
+                };
+            }
+
+            state.currentClassification = result;
+            nameJa.textContent = result.nameJa;
+            nameEn.textContent = result.nameEn;
+            desc.textContent = result.desc;
+        }
+
+        // ==========================================
+        // 5. コレクション管理（保存・読み込み・削除・上限10個・永続化）
+        // ==========================================
+        function loadCollectionFromStorage() {
+            try {
+                const raw = window.localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (Array.isArray(parsed)) {
+                        state.collection = parsed.slice(0, MAX_COLLECTION);
+                    }
+                }
+            } catch (e) {
+                console.warn('Collection load failed:', e);
+            }
+            updateCollectionBadges();
+        }
+
+        function saveCollectionToStorage() {
+            try {
+                window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state.collection));
+            } catch (e) {
+                console.warn('Collection save retry without large thumbnails:', e);
+                try {
+                    const compact = state.collection.map(item => ({ ...item, thumbnail: '' }));
+                    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(compact));
+                } catch (err) {
+                    console.error('Collection save failed:', err);
+                }
+            }
+            updateCollectionBadges();
+        }
+
+        // 現在の3Dビューポートから高精細サムネイルをキャプチャ
+        function captureThumbnail() {
+            // サムネイル撮影時のみ一時的に高解像度レンダリングを行い画質を向上させる
+            const prevPixelRatio = renderer.getPixelRatio();
+            renderer.setPixelRatio(Math.max(prevPixelRatio, 2.5));
+            renderer.render(scene, camera);
+
+            const srcCanvas = renderer.domElement;
+            const thumbCanvas = document.createElement('canvas');
+            const size = 400;
+            thumbCanvas.width = size;
+            thumbCanvas.height = size;
+            const ctx = thumbCanvas.getContext('2d');
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+
+            const minSide = Math.min(srcCanvas.width, srcCanvas.height);
+            const sx = (srcCanvas.width - minSide) * 0.5;
+            const sy = (srcCanvas.height - minSide) * 0.5;
+            ctx.drawImage(srcCanvas, sx, sy, minSide, minSide, 0, 0, size, size);
+
+            // レンダラーのピクセル比を元に戻す
+            renderer.setPixelRatio(prevPixelRatio);
+            renderer.render(scene, camera);
+
+            return thumbCanvas.toDataURL('image/webp', 0.9);
+        }
+
+        function showToast(text) {
+            const toast = document.getElementById('toast-msg');
+            toast.textContent = text;
+            toast.style.opacity = '1';
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => {
+                toast.style.opacity = '0';
+            }, 2600);
+        }
+
+        function updateCollectionBadges() {
+            const count = state.collection.length;
+            const isFull = count >= MAX_COLLECTION;
+
+            document.getElementById('collection-count-badge').textContent = `${count}/${MAX_COLLECTION}`;
+            document.getElementById('modal-count-badge').textContent = isFull ? `${count} / ${MAX_COLLECTION} (FULL)` : `${count} / ${MAX_COLLECTION}`;
+
+            const collectBtn = document.getElementById('collect-btn');
+            const collectText = document.getElementById('collect-btn-text');
+            if (isFull) {
+                collectBtn.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-400 text-white font-mono-tech text-xs font-semibold cursor-pointer whitespace-nowrap';
+                collectText.textContent = 'FULL (10/10)';
+            } else {
+                collectBtn.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-900 text-[#faf9f6] font-mono-tech text-xs font-semibold hover:bg-[#b85d3b] transition-colors active:scale-95 cursor-pointer whitespace-nowrap shadow-sm';
+                collectText.textContent = 'COLLECT';
+            }
+        }
+
+        function addCurrentSpecimenToCollection() {
+            if (state.collection.length >= MAX_COLLECTION) {
+                showToast('コレクションが上限(10個)に達しています。不要な標本を削除してください。');
+                openCollectionModal();
+                return;
+            }
+
+            const inputEl = document.getElementById('custom-name-input');
+            const customName = inputEl.value.trim();
+            const defaultName = `${state.currentClassification.nameJa} #${state.collection.length + 1}`;
+
+            const specimen = {
+                id: Date.now().toString(),
+                name: customName || defaultName,
+                classificationJa: state.currentClassification.nameJa,
+                isReal: state.currentClassification.isReal,
+                w: Number(state.w.toFixed(2)),
+                d: Number(state.d.toFixed(3)),
+                t: Number(state.t.toFixed(2)),
+                textureType: state.textureType,
+                baseColor: state.baseColor,
+                patternColor: state.patternColor,
+                finish: state.finish,
+                decorations: { ...state.decorations },
+                thumbnail: captureThumbnail(),
+                createdAt: new Date().toLocaleDateString('ja-JP')
+            };
+
+            state.collection.unshift(specimen);
+            saveCollectionToStorage();
+            inputEl.value = '';
+            showToast(`「${specimen.name}」をコレクションに保存しました (${state.collection.length}/10)`);
+        }
+
+        function renderCollectionGrid() {
+            const grid = document.getElementById('collection-grid');
+            grid.innerHTML = '';
+
+            if (state.collection.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-12 text-center space-y-2">
+                        <p class="text-sm font-semibold text-stone-600">まだ標本が保存されていません</p>
+                        <p class="text-xs text-stone-400">スライダーや装飾で自分だけの殻を作り、右上の「保存」ボタンから最大10個までコレクションできます。</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const texNames = { nautilus: '貝殻・縞', clam: '二枚貝・肋', horn: '角・象牙' };
+
+            state.collection.forEach((item, idx) => {
+                const decTags = [];
+                if (item.decorations?.spines) decTags.push('トゲ');
+                if (item.decorations?.ribs) decTags.push('縦肋');
+                if (item.decorations?.pearls) decTags.push('真珠');
+
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-2xl border border-stone-900/10 p-3.5 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow';
+                card.innerHTML = `
+                    <div>
+                        <div class="relative w-full aspect-square rounded-xl overflow-hidden bg-[#f3f1ed] mb-3 border border-stone-900/5">
+                            <img src="${item.thumbnail}" alt="${item.name}" class="w-full h-full object-cover">
+                            <span class="absolute top-2 left-2 font-mono-tech text-[10px] font-bold px-2 py-0.5 rounded-full bg-stone-900/75 text-white">
+                                #${String(idx + 1).padStart(2, '0')}
+                            </span>
+                            <span class="absolute bottom-2 right-2 text-[10px] font-semibold px-2 py-0.5 rounded-full ${item.isReal ? 'bg-emerald-900/85 text-white' : 'bg-[#b85d3b]/90 text-white'}">
+                                ${item.classificationJa}
+                            </span>
+                        </div>
+                        <h4 class="font-bold text-sm text-stone-900 truncate" title="${item.name}">${item.name}</h4>
+                        <div class="font-mono-tech text-[11px] text-stone-600 mt-1 flex items-center gap-2">
+                            <span>W:${item.w}</span>
+                            <span>D:${item.d}</span>
+                            <span>T:${item.t}</span>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-1 mt-2">
+                            <span class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-stone-100 text-stone-600">
+                                <span class="w-2 h-2 rounded-full border border-stone-400" style="background:${item.baseColor}"></span>
+                                ${texNames[item.textureType] || '貝殻'}
+                            </span>
+                            ${decTags.map(tag => `<span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-900/10 text-[#b85d3b] font-medium">+${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 mt-3.5 pt-2.5 border-t border-stone-900/10">
+                        <button data-load-id="${item.id}" class="load-item-btn flex-1 py-1.5 px-3 rounded-lg bg-stone-900 text-white text-xs font-semibold hover:bg-[#b85d3b] transition-colors cursor-pointer">
+                            呼び出し
+                        </button>
+                        <button data-del-id="${item.id}" class="del-item-btn py-1.5 px-2.5 rounded-lg bg-stone-100 text-stone-600 hover:bg-red-50 hover:text-red-600 text-xs font-medium transition-colors cursor-pointer" title="削除">
+                            削除
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            // 呼び出しボタンイベント
+            grid.querySelectorAll('.load-item-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = btn.getAttribute('data-load-id');
+                    const found = state.collection.find(c => c.id === id);
+                    if (found) {
+                        applySpecimenConfig(found);
+                        closeCollectionModal();
+                        showToast(`「${found.name}」を呼び出しました`);
+                    }
+                });
+            });
+
+            // 削除ボタンイベント
+            grid.querySelectorAll('.del-item-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = btn.getAttribute('data-del-id');
+                    state.collection = state.collection.filter(c => c.id !== id);
+                    saveCollectionToStorage();
+                    renderCollectionGrid();
+                });
+            });
+        }
+
+        function applySpecimenConfig(cfg) {
+            state.w = cfg.w;
+            state.d = cfg.d;
+            state.t = cfg.t;
+            state.targetW = cfg.w;
+            state.targetD = cfg.d;
+            state.targetT = cfg.t;
+            state.isMorphing = false;
+
+            state.textureType = cfg.textureType || 'nautilus';
+            state.baseColor = cfg.baseColor || '#efe9dc';
+            state.patternColor = cfg.patternColor || '#b85d3b';
+            state.finish = cfg.finish || 'matte';
+            state.decorations = {
+                spines: Boolean(cfg.decorations?.spines),
+                ribs: Boolean(cfg.decorations?.ribs),
+                pearls: Boolean(cfg.decorations?.pearls)
+            };
+
+            syncStyleUI();
+            updateProceduralTextures();
+            syncUIAndMesh();
+        }
+
+        const collectionModal = document.getElementById('collection-modal');
+        function openCollectionModal() {
+            renderCollectionGrid();
+            collectionModal.classList.remove('hidden');
+            collectionModal.classList.add('flex');
+        }
+        function closeCollectionModal() {
+            collectionModal.classList.add('hidden');
+            collectionModal.classList.remove('flex');
+        }
+
+        // ==========================================
+        // 6. UIイベントとインタラクション制御
+        // ==========================================
+        const sliderW = document.getElementById('slider-w');
+        const sliderD = document.getElementById('slider-d');
+        const sliderT = document.getElementById('slider-t');
+
+        const valW = document.getElementById('val-w');
+        const valD = document.getElementById('val-d');
+        const valT = document.getElementById('val-t');
+
+        function syncUIAndMesh() {
+            valW.textContent = state.w >= 100 ? state.w.toFixed(0) : state.w.toFixed(2);
+            valD.textContent = state.d.toFixed(2);
+            valT.textContent = state.t.toFixed(2);
+
+            sliderW.value = wToSlider(state.w);
+            sliderD.value = state.d;
+            sliderT.value = state.t;
+
+            buildRaupShell(state.w, state.d, state.t);
+            classifyMorphospace(state.w, state.d, state.t);
+        }
+
+        function syncStyleUI() {
+            // テクスチャボタン状態
+            document.querySelectorAll('.tex-btn').forEach(btn => {
+                const active = btn.getAttribute('data-tex') === state.textureType;
+                btn.className = active
+                    ? 'tex-btn px-2 py-1.5 rounded-lg text-[11px] font-semibold bg-stone-900 text-white transition-all cursor-pointer'
+                    : 'tex-btn px-2 py-1.5 rounded-lg text-[11px] font-medium bg-stone-900/5 text-stone-700 hover:bg-stone-900/10 transition-all cursor-pointer';
+            });
+
+            // 仕上げボタン状態
+            document.querySelectorAll('.finish-btn').forEach(btn => {
+                const active = btn.getAttribute('data-finish') === state.finish;
+                btn.className = active
+                    ? 'finish-btn py-1 rounded-md text-[10px] font-semibold bg-stone-900 text-white cursor-pointer'
+                    : 'finish-btn py-1 rounded-md text-[10px] font-medium bg-stone-900/5 text-stone-700 hover:bg-stone-900/10 cursor-pointer';
+            });
+
+            // カラーピッカー値
+            document.getElementById('color-base').value = state.baseColor;
+            document.getElementById('color-pattern').value = state.patternColor;
+
+            // 装飾トグルボタン状態
+            const updateDecBtn = (id, isOn) => {
+                const el = document.getElementById(id);
+                el.className = isOn
+                    ? 'dec-btn flex flex-col items-center justify-center py-2 px-1 rounded-xl border-2 border-[#b85d3b] bg-[#b85d3b]/10 text-[#b85d3b] transition-all cursor-pointer shadow-sm'
+                    : 'dec-btn flex flex-col items-center justify-center py-2 px-1 rounded-xl border border-stone-900/10 bg-white/60 text-stone-700 hover:bg-white transition-all cursor-pointer';
+            };
+            updateDecBtn('dec-spines-btn', state.decorations.spines);
+            updateDecBtn('dec-ribs-btn', state.decorations.ribs);
+            updateDecBtn('dec-pearls-btn', state.decorations.pearls);
+        }
+
+        // タブ切り替え（形状 <-> 質感・色・装飾）
+        const tabBtnShape = document.getElementById('tab-btn-shape');
+        const tabBtnStyle = document.getElementById('tab-btn-style');
+        const panelShape = document.getElementById('panel-shape');
+        const panelStyle = document.getElementById('panel-style');
+
+        tabBtnShape.addEventListener('click', () => {
+            tabBtnShape.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-stone-900 shadow-sm transition-all cursor-pointer';
+            tabBtnStyle.className = 'px-3 py-1.5 rounded-lg text-xs font-medium text-stone-600 hover:text-stone-900 transition-all cursor-pointer';
+            panelShape.classList.remove('hidden');
+            panelShape.classList.add('grid');
+            panelStyle.classList.add('hidden');
+            panelStyle.classList.remove('grid');
+        });
+
+        tabBtnStyle.addEventListener('click', () => {
+            tabBtnStyle.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-stone-900 shadow-sm transition-all cursor-pointer';
+            tabBtnShape.className = 'px-3 py-1.5 rounded-lg text-xs font-medium text-stone-600 hover:text-stone-900 transition-all cursor-pointer';
+            panelStyle.classList.remove('hidden');
+            panelStyle.classList.add('grid');
+            panelShape.classList.add('hidden');
+            panelShape.classList.remove('grid');
+        });
+
+        // ⑤ ナイトモード切り替え処理（タイトル画面・シミュレーション画面共通）
+        function toggleNightMode() {
+            state.isNightMode = !state.isNightMode;
+            const bgColor = state.isNightMode ? 0x0b132b : 0xf3f1ed;
+            scene.background.setHex(bgColor);
+            scene.fog.color.setHex(bgColor);
+
+            if (state.isNightMode) {
+                document.body.classList.add('night-mode');
+                ambientLight.intensity = 0.65;
+                keyLight.intensity = 1.5;
+                rimLight.intensity = 0.95;
+            } else {
+                document.body.classList.remove('night-mode');
+                ambientLight.intensity = 0.65;
+                keyLight.intensity = 1.2;
+                rimLight.intensity = 0.6;
+            }
+
+            const moonSvg = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>`;
+            const sunSvg = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>`;
+
+            document.querySelectorAll('.night-icon').forEach(el => {
+                el.innerHTML = state.isNightMode ? sunSvg : moonSvg;
+            });
+            document.querySelectorAll('.night-label').forEach(el => {
+                el.textContent = state.isNightMode ? 'ライトモード' : 'ナイトモード';
+            });
+        }
+
+        document.getElementById('title-night-btn').addEventListener('click', toggleNightMode);
+        document.getElementById('sim-night-btn').addEventListener('click', toggleNightMode);
+
+        // タイトル画面シェアボタン（URLコピー＆完了フィードバック）
+        document.getElementById('title-share-btn').addEventListener('click', () => {
+            const shareText = `SHELLS - 3D Shell & Horn Morphospace\n${window.location.href}`;
+            const tempInput = document.createElement('textarea');
+            tempInput.value = shareText;
+            tempInput.style.position = 'fixed';
+            tempInput.style.opacity = '0';
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            try {
+                document.execCommand('copy');
+                const label = document.getElementById('title-share-label');
+                label.textContent = 'コピー完了';
+                clearTimeout(label._timer);
+                label._timer = setTimeout(() => {
+                    label.textContent = 'シェア';
+                }, 2000);
+            } catch (e) {
+                console.warn('Copy failed:', e);
+            }
+            document.body.removeChild(tempInput);
+        });
+
+        // スライダー入力イベント
+        sliderW.addEventListener('input', (e) => {
+            state.isMorphing = false;
+            state.w = sliderToW(parseFloat(e.target.value));
+            syncUIAndMesh();
+        });
+
+        sliderD.addEventListener('input', (e) => {
+            state.isMorphing = false;
+            state.d = parseFloat(e.target.value);
+            syncUIAndMesh();
+        });
+
+        sliderT.addEventListener('input', (e) => {
+            state.isMorphing = false;
+            state.t = parseFloat(e.target.value);
+            syncUIAndMesh();
+        });
+
+        // テクスチャ・仕上げ・色・装飾イベント
+        document.querySelectorAll('.tex-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                state.textureType = btn.getAttribute('data-tex');
+                syncStyleUI();
+                updateProceduralTextures();
+            });
+        });
+
+        document.querySelectorAll('.finish-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                state.finish = btn.getAttribute('data-finish');
+                syncStyleUI();
+                updateProceduralTextures();
+            });
+        });
+
+        document.getElementById('color-base').addEventListener('input', (e) => {
+            state.baseColor = e.target.value;
+            updateProceduralTextures();
+        });
+
+        document.getElementById('color-pattern').addEventListener('input', (e) => {
+            state.patternColor = e.target.value;
+            updateProceduralTextures();
+        });
+
+        document.querySelectorAll('.swatch-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                state.baseColor = btn.getAttribute('data-base');
+                state.patternColor = btn.getAttribute('data-pat');
+                syncStyleUI();
+                updateProceduralTextures();
+            });
+        });
+
+        document.getElementById('dec-spines-btn').addEventListener('click', () => {
+            state.decorations.spines = !state.decorations.spines;
+            syncStyleUI();
+            buildRaupShell(state.w, state.d, state.t);
+        });
+
+        document.getElementById('dec-ribs-btn').addEventListener('click', () => {
+            state.decorations.ribs = !state.decorations.ribs;
+            syncStyleUI();
+            buildRaupShell(state.w, state.d, state.t);
+        });
+
+        document.getElementById('dec-pearls-btn').addEventListener('click', () => {
+            state.decorations.pearls = !state.decorations.pearls;
+            syncStyleUI();
+            buildRaupShell(state.w, state.d, state.t);
+        });
+
+        // プリセットボタン（形状＋適切な自然テクスチャ・配色へモーフィング遷移）
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const key = btn.getAttribute('data-preset');
+                const p = PRESETS[key];
+                if (!p) return;
+                state.targetW = p.w;
+                state.targetD = p.d;
+                state.targetT = p.t;
+                state.isMorphing = true;
+
+                state.textureType = p.textureType;
+                state.baseColor = p.baseColor;
+                state.patternColor = p.patternColor;
+                state.finish = p.finish;
+                state.decorations = { ...p.decorations };
+
+                syncStyleUI();
+                updateProceduralTextures();
+            });
+        });
+
+        // ランダム生成ボタン
+        document.getElementById('random-btn').addEventListener('click', () => {
+            const randSliderW = Math.random() * 100;
+            state.targetW = sliderToW(randSliderW);
+            state.targetD = Math.random() * 0.78;
+            state.targetT = Math.random() * 3.0;
+            state.isMorphing = true;
+        });
+
+        // コレクション関連ボタン
+        document.getElementById('collect-btn').addEventListener('click', addCurrentSpecimenToCollection);
+        document.getElementById('open-collection-btn').addEventListener('click', openCollectionModal);
+        document.getElementById('close-collection-btn').addEventListener('click', closeCollectionModal);
+        collectionModal.addEventListener('click', (e) => {
+            if (e.target === collectionModal) closeCollectionModal();
+        });
+
+        // 画面遷移（タイトル <-> シミュレーション）
+        const titleScreen = document.getElementById('title-screen');
+        const simScreen = document.getElementById('sim-screen');
+        const mechanismPanel = document.getElementById('mechanism-panel');
+        const mechanismTabBtn = document.getElementById('mechanism-tab-btn');
+
+        mechanismTabBtn.addEventListener('click', () => {
+            const isHidden = mechanismPanel.classList.contains('hidden');
+            if (isHidden) {
+                mechanismPanel.classList.remove('hidden');
+                mechanismTabBtn.classList.add('ring-2', 'ring-[#b85d3b]/40', 'bg-white');
+            } else {
+                mechanismPanel.classList.add('hidden');
+                mechanismTabBtn.classList.remove('ring-2', 'ring-[#b85d3b]/40', 'bg-white');
+            }
+        });
+
+        document.getElementById('close-mechanism-btn').addEventListener('click', () => {
+            mechanismPanel.classList.add('hidden');
+            mechanismTabBtn.classList.remove('ring-2', 'ring-[#b85d3b]/40', 'bg-white');
+        });
+
+        // ② 標本解説タブの開閉制御
+        const specimenDescPanel = document.getElementById('specimen-desc-panel');
+        const specimenDescChevron = document.getElementById('specimen-desc-chevron');
+        document.getElementById('toggle-specimen-desc-btn').addEventListener('click', () => {
+            const isHidden = specimenDescPanel.classList.contains('hidden');
+            if (isHidden) {
+                specimenDescPanel.classList.remove('hidden');
+                specimenDescChevron.classList.add('rotate-180');
+            } else {
+                specimenDescPanel.classList.add('hidden');
+                specimenDescChevron.classList.remove('rotate-180');
+            }
+        });
+
+        document.getElementById('start-btn').addEventListener('click', () => {
+            state.mode = 'sim';
+            mechanismPanel.classList.add('hidden');
+            mechanismTabBtn.classList.remove('ring-2', 'ring-[#b85d3b]/40', 'bg-white');
+            titleScreen.classList.remove('visible-screen');
+            titleScreen.classList.add('hidden-screen');
+            simScreen.classList.remove('hidden-screen');
+            simScreen.classList.add('visible-screen');
+        });
+
+        document.getElementById('back-btn').addEventListener('click', () => {
+            state.mode = 'title';
+            closeCollectionModal();
+            simScreen.classList.remove('visible-screen');
+            simScreen.classList.add('hidden-screen');
+            titleScreen.classList.remove('hidden-screen');
+            titleScreen.classList.add('visible-screen');
+        });
+
+        // ==========================================
+        // 7. マウス＆タッチ操作（3D回転・ズーム）
+        // ==========================================
+        container.addEventListener('mousedown', (e) => {
+            state.isDragging = true;
+            state.prevMouseX = e.clientX;
+            state.prevMouseY = e.clientY;
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!state.isDragging) return;
+            const dx = e.clientX - state.prevMouseX;
+            const dy = e.clientY - state.prevMouseY;
+            state.rotY += dx * 0.008;
+            state.rotX += dy * 0.008;
+            state.rotX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, state.rotX));
+            state.prevMouseX = e.clientX;
+            state.prevMouseY = e.clientY;
+        });
+
+        window.addEventListener('mouseup', () => {
+            state.isDragging = false;
+        });
+
+        container.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            state.zoom += e.deltaY * 0.001;
+            state.zoom = Math.max(0.45, Math.min(2.4, state.zoom));
+        }, { passive: false });
+
+        // タッチ操作対応（1本指回転・2本指ピンチズーム）
+        container.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                state.isDragging = true;
+                state.prevMouseX = e.touches[0].clientX;
+                state.prevMouseY = e.touches[0].clientY;
+            } else if (e.touches.length === 2) {
+                state.isDragging = false;
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                state.pinchStartDist = Math.hypot(dx, dy);
+                state.pinchStartZoom = state.zoom;
+            }
+        }, { passive: true });
+
+        container.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 1 && state.isDragging) {
+                const dx = e.touches[0].clientX - state.prevMouseX;
+                const dy = e.touches[0].clientY - state.prevMouseY;
+                state.rotY += dx * 0.009;
+                state.rotX += dy * 0.009;
+                state.rotX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, state.rotX));
+                state.prevMouseX = e.touches[0].clientX;
+                state.prevMouseY = e.touches[0].clientY;
+            } else if (e.touches.length === 2) {
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                const dist = Math.hypot(dx, dy);
+                if (state.pinchStartDist > 0) {
+                    const ratio = state.pinchStartDist / dist;
+                    state.zoom = Math.max(0.45, Math.min(2.4, state.pinchStartZoom * ratio));
+                }
+            }
+        }, { passive: true });
+
+        container.addEventListener('touchend', () => {
+            state.isDragging = false;
+            state.pinchStartDist = 0;
+        });
+
+        // リサイズ対応（アスペクト比に応じたタイトル画面レイアウトの切り替え）
+        function updateTitleOrientationLayout() {
+            const isPortrait = window.innerHeight > window.innerWidth;
+            if (isPortrait) {
+                titleScreen.classList.remove('justify-center');
+                titleScreen.classList.add('justify-end');
+            } else {
+                titleScreen.classList.remove('justify-end');
+                titleScreen.classList.add('justify-center');
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            updateTitleOrientationLayout();
+        });
+
+        // ==========================================
+        // 8. メインアニメーションループ
+        // ==========================================
+        let clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const dt = clock.getDelta();
+
+            // ④ 真珠テクスチャのUVスクロールによるキラキラ反射演出（色・大きさは固定）
+            if (state.decorations.pearls) {
+                pearlTextures.map.offset.x += dt * 0.25;
+                pearlTextures.bumpMap.offset.x += dt * 0.25;
+            }
+
+            // プリセットやランダム押下時のスムーズなモーフィング補間
+            if (state.isMorphing) {
+                const speed = 1 - Math.exp(-8 * dt);
+                state.w += (state.targetW - state.w) * speed;
+                state.d += (state.targetD - state.d) * speed;
+                state.t += (state.targetT - state.t) * speed;
+
+                if (
+                    Math.abs(state.targetW - state.w) < 0.01 &&
+                    Math.abs(state.targetD - state.d) < 0.001 &&
+                    Math.abs(state.targetT - state.t) < 0.005
+                ) {
+                    state.w = state.targetW;
+                    state.d = state.targetD;
+                    state.t = state.targetT;
+                    state.isMorphing = false;
+                }
+                syncUIAndMesh();
+            }
+
+            // タイトル画面ではゆっくり自動回転＋優雅に形状が変化するデモ演出
+            if (state.mode === 'title' && !state.isDragging) {
+                state.rotY += dt * 0.35;
+            }
+
+            // 画面のアスペクト比（縦長 vs 横長）に応じてタイトルと貝の並び方を切り替え
+            const isPortrait = window.innerHeight > window.innerWidth;
+            const targetPosX = (state.mode === 'title' && !isPortrait) ? 1.35 : 0.0;
+            const targetPosY = (state.mode === 'title' && isPortrait) ? 0.72 : 0.15;
+
+            shellGroup.position.x += (targetPosX - shellGroup.position.x) * 0.08;
+            shellGroup.position.y += (targetPosY - shellGroup.position.y) * 0.08;
+
+            shellGroup.rotation.x += (state.rotX - shellGroup.rotation.x) * 0.15;
+            shellGroup.rotation.y += (state.rotY - shellGroup.rotation.y) * 0.15;
+
+            const targetCamZ = 6.2 * state.zoom;
+            camera.position.z += (targetCamZ - camera.position.z) * 0.12;
+
+            renderer.render(scene, camera);
+        }
+
+        // 初期化してループ開始
+        window.onload = function () {
+            updateTitleOrientationLayout();
+            loadCollectionFromStorage();
+            syncStyleUI();
+            updateProceduralTextures();
+            syncUIAndMesh();
+            animate();
+        };
+    </script>
+</body>
+</html>
