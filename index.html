@@ -1669,7 +1669,7 @@
             }
         }
 
-        // 標本（名前・紹介文・画像・URL）をシェア
+        // 標本（名前・ゲーム説明文・画像・URL）をシェア
         async function shareSpecimenItem(item) {
             const itemShareIntro = `『${item.name}』（${item.classificationJa} / W:${item.w}, D:${item.d}, T:${item.t}）\n${SHARE_INTRO}`;
             const itemShareFull = `${itemShareIntro}\n${SHARE_URL}`;
@@ -1683,7 +1683,7 @@
                 if (navigator.share) {
                     const shareData = {
                         title: `${item.name} | SHELLS`,
-                        text: itemShareIntro,
+                        text: itemShareFull,
                         url: SHARE_URL
                     };
                     if (navigator.canShare && navigator.canShare({ files: [imageFile] })) {
@@ -1857,7 +1857,7 @@
 
         // タイトル画面シェアボタン（OS標準シェア一覧の起動＋非対応時はシェア一覧モーダル表示）
         const SHARE_URL = 'https://da-hu-da.github.io/shells/';
-        const SHARE_INTRO = 'たった1つの法則と3つの数値で、世界中の貝殻や角、幻の殻までを3D生成するシミュレーター『SHELLS』';
+        const SHARE_INTRO = '『SHELLS』自分好みの貝殻を作ってコレクションしよう！\n自然界に存在しない貝も作れちゃう⁉';
         const SHARE_FULL_TEXT = `${SHARE_INTRO}\n${SHARE_URL}`;
         let activeShareText = SHARE_FULL_TEXT;
 
@@ -1898,7 +1898,7 @@
                 try {
                     await navigator.share({
                         title: 'SHELLS | 3D Shell & Horn Morphospace',
-                        text: SHARE_INTRO,
+                        text: SHARE_FULL_TEXT,
                         url: SHARE_URL
                     });
                     return;
